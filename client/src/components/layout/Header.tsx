@@ -43,29 +43,29 @@ const Header = () => {
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
                 <a className="flex items-center">
-                  <Drill className="h-8 w-auto text-primary-500" />
-                  <span className="ml-2 text-xl font-bold text-primary-500">Same-Shit</span>
+                  <Drill className="h-8 w-auto text-primary" />
+                  <span className="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">Mechanic Finder</span>
                 </a>
               </Link>
             </div>
             <nav className="hidden md:ml-8 md:flex md:space-x-8">
               <Link href="/">
-                <a className={`${location === "/" ? "text-primary-500 font-medium border-b-2 border-primary-500" : "text-neutral-500 hover:text-primary-500 font-medium"} px-1 pt-5 pb-3`}>
+                <a className={`${location === "/" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
                   Home
                 </a>
               </Link>
               <Link href="/mechanics">
-                <a className={`${location.startsWith("/mechanics") ? "text-primary-500 font-medium border-b-2 border-primary-500" : "text-neutral-500 hover:text-primary-500 font-medium"} px-1 pt-5 pb-3`}>
+                <a className={`${location.startsWith("/mechanics") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
                   Find Mechanics
                 </a>
               </Link>
               <Link href="/jobs">
-                <a className={`${location.startsWith("/jobs") && location !== "/jobs/post" ? "text-primary-500 font-medium border-b-2 border-primary-500" : "text-neutral-500 hover:text-primary-500 font-medium"} px-1 pt-5 pb-3`}>
+                <a className={`${location.startsWith("/jobs") && location !== "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
                   Browse Jobs
                 </a>
               </Link>
               <Link href="/jobs/post">
-                <a className={`${location === "/jobs/post" ? "text-primary-500 font-medium border-b-2 border-primary-500" : "text-neutral-500 hover:text-primary-500 font-medium"} px-1 pt-5 pb-3`}>
+                <a className={`${location === "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
                   Post a Job
                 </a>
               </Link>
@@ -75,7 +75,7 @@ const Header = () => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link href="/messages">
-                  <a className="text-neutral-500 hover:text-primary-500">
+                  <a className="text-foreground hover:text-primary">
                     <MessageSquare className="h-5 w-5" />
                   </a>
                 </Link>
@@ -87,7 +87,7 @@ const Header = () => {
                           src={user?.profilePicture} 
                           alt={`${user?.firstName} ${user?.lastName}`} 
                         />
-                        <AvatarFallback className="bg-primary-100 text-primary-800">
+                        <AvatarFallback className="bg-secondary text-secondary-foreground">
                           {user?.firstName && user?.lastName ? getInitials(user.firstName, user.lastName) : "U"}
                         </AvatarFallback>
                       </Avatar>
@@ -96,7 +96,7 @@ const Header = () => {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <div className="flex flex-col space-y-1 p-2">
                       <p className="text-sm font-medium">{user?.firstName} {user?.lastName}</p>
-                      <p className="text-xs text-neutral-500">{user?.email}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
@@ -141,12 +141,12 @@ const Header = () => {
             ) : (
               <div className="hidden md:flex space-x-3">
                 <Link href="/login">
-                  <Button variant="outline" className="text-primary-500 border-primary-500 hover:bg-primary-50">
+                  <Button variant="outline" className="text-primary border-primary hover:bg-primary/10">
                     Sign In
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button className="bg-secondary-500 hover:bg-secondary-600 text-white">
+                  <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
                     Join Now
                   </Button>
                 </Link>

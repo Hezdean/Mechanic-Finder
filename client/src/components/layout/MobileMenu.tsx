@@ -37,7 +37,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
       <SheetContent side="left" className="sm:max-w-md w-[80vw]">
         <SheetHeader className="mb-4">
           <SheetTitle className="text-left flex items-center">
-            <span className="text-xl font-bold text-primary-500">Same-Shit</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">Mechanic Finder</span>
             <SheetClose className="ml-auto">
               <Bookmark className="h-5 w-5" />
               <span className="sr-only">Close</span>
