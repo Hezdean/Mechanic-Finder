@@ -50,8 +50,8 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               <a 
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   location === "/" 
-                    ? "text-primary-500 bg-primary-50" 
-                    : "text-neutral-500 hover:text-primary-500 hover:bg-neutral-50"
+                    ? "text-primary bg-primary/10" 
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
                 }`}
                 onClick={onClose}
               >
@@ -62,8 +62,8 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               <a 
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   location.startsWith("/mechanics") 
-                    ? "text-primary-500 bg-primary-50" 
-                    : "text-neutral-500 hover:text-primary-500 hover:bg-neutral-50"
+                    ? "text-primary bg-primary/10" 
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
                 }`}
                 onClick={onClose}
               >
@@ -74,8 +74,8 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               <a 
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   location.startsWith("/jobs") && location !== "/jobs/post" 
-                    ? "text-primary-500 bg-primary-50" 
-                    : "text-neutral-500 hover:text-primary-500 hover:bg-neutral-50"
+                    ? "text-primary bg-primary/10" 
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
                 }`}
                 onClick={onClose}
               >
@@ -86,8 +86,8 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               <a 
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   location === "/jobs/post" 
-                    ? "text-primary-500 bg-primary-50" 
-                    : "text-neutral-500 hover:text-primary-500 hover:bg-neutral-50"
+                    ? "text-primary bg-primary/10" 
+                    : "text-foreground hover:text-primary hover:bg-primary/5"
                 }`}
                 onClick={onClose}
               >
@@ -96,16 +96,16 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
             </Link>
           </div>
 
-          <div className="pt-4 pb-3 border-t border-neutral-200">
+          <div className="pt-4 pb-3 border-t border-primary/10">
             {isAuthenticated ? (
               <div className="space-y-1">
                 <div className="px-5 py-3">
                   <p className="text-base font-medium">{user?.firstName} {user?.lastName}</p>
-                  <p className="text-sm text-neutral-500">{user?.email}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email}</p>
                 </div>
                 <Link href={getDashboardLink()}>
                   <a 
-                    className="block px-3 py-2 rounded-md text-base font-medium text-primary-500 hover:bg-neutral-50"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-primary/5"
                     onClick={onClose}
                   >
                     Dashboard
@@ -113,14 +113,14 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 </Link>
                 <Link href="/messages">
                   <a 
-                    className="block px-3 py-2 rounded-md text-base font-medium text-primary-500 hover:bg-neutral-50"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-primary/5"
                     onClick={onClose}
                   >
                     Messages
                   </a>
                 </Link>
                 <button
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-neutral-50"
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-destructive hover:bg-destructive/5"
                   onClick={handleLogout}
                 >
                   Sign Out
@@ -131,7 +131,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 <Link href="/login">
                   <Button 
                     variant="outline" 
-                    className="w-full justify-center text-primary-500 border-primary-500 hover:bg-primary-50"
+                    className="w-full justify-center text-primary border-primary hover:bg-primary/10"
                     onClick={onClose}
                   >
                     Sign In
@@ -139,7 +139,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 </Link>
                 <Link href="/register">
                   <Button 
-                    className="w-full justify-center mt-2 bg-secondary-500 hover:bg-secondary-600 text-white"
+                    className="w-full justify-center mt-2 bg-accent hover:bg-accent/90 text-accent-foreground"
                     onClick={onClose}
                   >
                     Join Now

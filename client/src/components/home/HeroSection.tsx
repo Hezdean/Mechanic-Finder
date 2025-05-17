@@ -8,9 +8,9 @@ const HeroSection = () => {
   return (
     <section className="relative text-white">
       <div 
-        className="absolute inset-0 bg-primary-500/80 z-10"
+        className="absolute inset-0 z-10"
         style={{ 
-          backgroundImage: "linear-gradient(rgba(30, 92, 151, 0.9), rgba(30, 92, 151, 0.7))",
+          backgroundImage: "linear-gradient(rgba(33, 158, 188, 0.85), rgba(2, 48, 71, 0.95))",
         }}
       ></div>
       
@@ -28,12 +28,12 @@ const HeroSection = () => {
           <p className="mt-4 text-lg sm:text-xl">Connect with trusted mechanics in your area who will repair your vehicle right the first time.</p>
           <div className="mt-8 flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
             <Link href="/mechanics">
-              <Button size="lg" variant="secondary" className="bg-white text-primary-500 hover:bg-neutral-100">
+              <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
                 Find a Mechanic
               </Button>
             </Link>
             <Link href={isAuthenticated ? "/jobs/post" : "/register"}>
-              <Button size="lg" className="bg-secondary-500 hover:bg-secondary-600 text-white">
+              <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                 {isAuthenticated ? "Post a Repair Job" : "Join Now"}
               </Button>
             </Link>

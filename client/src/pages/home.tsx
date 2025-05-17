@@ -11,8 +11,8 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        <title>Same-Shit - Auto Repair Marketplace</title>
-        <meta name="description" content="Same-Shit connects car owners with trusted mechanics for hassle-free auto repairs. Find verified mechanics in your area or post your repair job today." />
+        <title>Mechanic Finder - Auto Repair Marketplace</title>
+        <meta name="description" content="Mechanic Finder connects car owners with trusted mechanics for hassle-free auto repairs. Find verified mechanics in your area or post your repair job today." />
       </Helmet>
       
       <main>
