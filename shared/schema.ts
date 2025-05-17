@@ -222,3 +222,21 @@ export const messageInsertSchema = createInsertSchema(messages).omit({
 
 export type MessageInsert = z.infer<typeof messageInsertSchema>;
 export type Message = typeof messages.$inferSelect;
+
+// Message relations
+export const messagesRelations = relations(messages, ({ one }) => ({
+  sender: one(users, {
+    fields: [messages.senderId],
+    references: [users.id],
+    relationName: "senderMessages",
+  }),
+  receiver: one(users, {
+    fields: [messages.receiverId],
+    references: [users.id],
+    relationName: "receiverMessages",
+  }),
+  job: one(jobs, {
+    fields: [messages.jobId],
+    references: [jobs.id],
+  }),
+}));

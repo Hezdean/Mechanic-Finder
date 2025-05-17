@@ -6,6 +6,8 @@ import {
   reviews, type Review, type ReviewInsert,
   messages, type Message, type MessageInsert
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, or } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -519,4 +521,283 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database implementation
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(user: UserInsert): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser || undefined;
+  }
+
+  async listUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  // Mechanic profile methods
+  async getMechanicProfile(id: number): Promise<MechanicProfile | undefined> {
+    const [profile] = await db.select().from(mechanicProfiles).where(eq(mechanicProfiles.id, id));
+    return profile || undefined;
+  }
+
+  async getMechanicProfileByUserId(userId: number): Promise<MechanicProfile | undefined> {
+    const [profile] = await db.select().from(mechanicProfiles).where(eq(mechanicProfiles.userId, userId));
+    return profile || undefined;
+  }
+
+  async createMechanicProfile(profile: MechanicProfileInsert): Promise<MechanicProfile> {
+    const [newProfile] = await db.insert(mechanicProfiles).values(profile).returning();
+    return newProfile;
+  }
+
+  async updateMechanicProfile(id: number, profileData: Partial<MechanicProfile>): Promise<MechanicProfile | undefined> {
+    const [updatedProfile] = await db
+      .update(mechanicProfiles)
+      .set(profileData)
+      .where(eq(mechanicProfiles.id, id))
+      .returning();
+    return updatedProfile || undefined;
+  }
+
+  async listMechanicProfiles(limit: number = 0): Promise<MechanicProfile[]> {
+    const query = db.select().from(mechanicProfiles);
+    
+    if (limit > 0) {
+      query.limit(limit);
+    }
+    
+    return await query;
+  }
+
+  async verifyMechanicProfile(id: number): Promise<MechanicProfile | undefined> {
+    const [verifiedProfile] = await db
+      .update(mechanicProfiles)
+      .set({ isVerified: true })
+      .where(eq(mechanicProfiles.id, id))
+      .returning();
+    return verifiedProfile || undefined;
+  }
+
+  // Job methods
+  async getJob(id: number): Promise<Job | undefined> {
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
+    return job || undefined;
+  }
+
+  async createJob(job: JobInsert): Promise<Job> {
+    const [newJob] = await db.insert(jobs).values(job).returning();
+    return newJob;
+  }
+
+  async updateJob(id: number, jobData: Partial<Job>): Promise<Job | undefined> {
+    const [updatedJob] = await db
+      .update(jobs)
+      .set(jobData)
+      .where(eq(jobs.id, id))
+      .returning();
+    return updatedJob || undefined;
+  }
+
+  async listJobs(limit: number = 0): Promise<Job[]> {
+    const query = db.select().from(jobs);
+    
+    if (limit > 0) {
+      query.limit(limit);
+    }
+    
+    return await query;
+  }
+
+  async listJobsByUserId(userId: number): Promise<Job[]> {
+    return await db.select().from(jobs).where(eq(jobs.userId, userId));
+  }
+
+  async listJobsByStatus(status: string): Promise<Job[]> {
+    return await db.select().from(jobs).where(eq(jobs.status, status));
+  }
+
+  // Bid methods
+  async getBid(id: number): Promise<Bid | undefined> {
+    const [bid] = await db.select().from(bids).where(eq(bids.id, id));
+    return bid || undefined;
+  }
+
+  async createBid(bid: BidInsert): Promise<Bid> {
+    const [newBid] = await db.insert(bids).values(bid).returning();
+    return newBid;
+  }
+
+  async updateBid(id: number, bidData: Partial<Bid>): Promise<Bid | undefined> {
+    const [updatedBid] = await db
+      .update(bids)
+      .set(bidData)
+      .where(eq(bids.id, id))
+      .returning();
+    return updatedBid || undefined;
+  }
+
+  async listBidsByJobId(jobId: number): Promise<Bid[]> {
+    return await db.select().from(bids).where(eq(bids.jobId, jobId));
+  }
+
+  async listBidsByMechanicId(mechanicId: number): Promise<Bid[]> {
+    return await db.select().from(bids).where(eq(bids.mechanicId, mechanicId));
+  }
+
+  async acceptBid(id: number): Promise<Bid | undefined> {
+    const bid = await this.getBid(id);
+    if (!bid) return undefined;
+
+    // Transaction to update both the bid and the job
+    const [updatedBid] = await db.transaction(async (tx) => {
+      // Update bid status
+      const [bid] = await tx
+        .update(bids)
+        .set({ status: 'accepted' })
+        .where(eq(bids.id, id))
+        .returning();
+
+      // Update job status and assigned mechanic
+      await tx
+        .update(jobs)
+        .set({ 
+          status: 'in_progress',
+          assignedMechanicId: bid.mechanicId
+        })
+        .where(eq(jobs.id, bid.jobId));
+
+      return [bid];
+    });
+
+    return updatedBid;
+  }
+
+  // Review methods
+  async getReview(id: number): Promise<Review | undefined> {
+    const [review] = await db.select().from(reviews).where(eq(reviews.id, id));
+    return review || undefined;
+  }
+
+  async createReview(review: ReviewInsert): Promise<Review> {
+    const [newReview] = await db.insert(reviews).values(review).returning();
+    
+    // Update mechanic's rating after review is added
+    await this.updateMechanicRating(review.mechanicId);
+    
+    return newReview;
+  }
+
+  async listReviewsByMechanicId(mechanicId: number): Promise<Review[]> {
+    return await db.select().from(reviews).where(eq(reviews.mechanicId, mechanicId));
+  }
+
+  async listReviewsByUserId(userId: number): Promise<Review[]> {
+    return await db.select().from(reviews).where(eq(reviews.userId, userId));
+  }
+
+  // Helper method to update mechanic rating
+  private async updateMechanicRating(mechanicId: number): Promise<void> {
+    const mechanicReviews = await this.listReviewsByMechanicId(mechanicId);
+    
+    if (mechanicReviews.length > 0) {
+      const totalRating = mechanicReviews.reduce((sum, review) => sum + review.rating, 0);
+      const averageRating = Math.round(totalRating / mechanicReviews.length);
+      
+      const profile = await this.getMechanicProfileByUserId(mechanicId);
+      if (profile) {
+        await db
+          .update(mechanicProfiles)
+          .set({ 
+            rating: averageRating,
+            reviewCount: mechanicReviews.length 
+          })
+          .where(eq(mechanicProfiles.id, profile.id));
+      }
+    }
+  }
+
+  // Message methods
+  async getMessage(id: number): Promise<Message | undefined> {
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message || undefined;
+  }
+
+  async createMessage(message: MessageInsert): Promise<Message> {
+    const [newMessage] = await db.insert(messages).values(message).returning();
+    return newMessage;
+  }
+
+  async markMessageAsRead(id: number): Promise<Message | undefined> {
+    const [updatedMessage] = await db
+      .update(messages)
+      .set({ isRead: true })
+      .where(eq(messages.id, id))
+      .returning();
+    return updatedMessage || undefined;
+  }
+
+  async listMessagesByUserId(userId: number): Promise<Message[]> {
+    // Get messages where user is either sender or receiver
+    return await db
+      .select()
+      .from(messages)
+      .where(
+        or(
+          eq(messages.senderId, userId),
+          eq(messages.receiverId, userId)
+        )
+      );
+  }
+
+  async listMessagesByConversation(userId1: number, userId2: number): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(
+        or(
+          and(
+            eq(messages.senderId, userId1),
+            eq(messages.receiverId, userId2)
+          ),
+          and(
+            eq(messages.senderId, userId2),
+            eq(messages.receiverId, userId1)
+          )
+        )
+      )
+      .orderBy(messages.createdAt);
+  }
+
+  async listMessagesByJobId(jobId: number): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.jobId, jobId))
+      .orderBy(messages.createdAt);
+  }
+}
+
+export const storage = new DatabaseStorage();
