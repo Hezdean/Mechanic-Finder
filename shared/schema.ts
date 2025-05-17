@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // User model
 export const users = pgTable("users", {
@@ -29,6 +30,30 @@ export const userInsertSchema = createInsertSchema(users).omit({
 export type UserInsert = z.infer<typeof userInsertSchema>;
 export type User = typeof users.$inferSelect;
 
+// User relations
+export const usersRelations = relations(users, ({ one, many }) => ({
+  mechanicProfile: one(mechanicProfiles, {
+    fields: [users.id],
+    references: [mechanicProfiles.userId],
+  }),
+  jobs: many(jobs),
+  bidsAsMechanic: many(bids, {
+    relationName: "mechanicBids",
+  }),
+  reviewsAsUser: many(reviews, {
+    relationName: "userReviews",
+  }),
+  reviewsAsMechanic: many(reviews, {
+    relationName: "mechanicReviews",
+  }),
+  sentMessages: many(messages, {
+    relationName: "senderMessages",
+  }),
+  receivedMessages: many(messages, {
+    relationName: "receiverMessages",
+  }),
+}));
+
 // Mechanic profile model
 export const mechanicProfiles = pgTable("mechanic_profiles", {
   id: serial("id").primaryKey(),
@@ -54,6 +79,14 @@ export const mechanicProfileInsertSchema = createInsertSchema(mechanicProfiles).
 
 export type MechanicProfileInsert = z.infer<typeof mechanicProfileInsertSchema>;
 export type MechanicProfile = typeof mechanicProfiles.$inferSelect;
+
+// Mechanic profile relations
+export const mechanicProfilesRelations = relations(mechanicProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [mechanicProfiles.userId],
+    references: [users.id],
+  }),
+}));
 
 // Job model
 export const jobs = pgTable("jobs", {
@@ -83,6 +116,22 @@ export const jobInsertSchema = createInsertSchema(jobs).omit({
 export type JobInsert = z.infer<typeof jobInsertSchema>;
 export type Job = typeof jobs.$inferSelect;
 
+// Job relations
+export const jobsRelations = relations(jobs, ({ one, many }) => ({
+  user: one(users, {
+    fields: [jobs.userId],
+    references: [users.id],
+  }),
+  assignedMechanic: one(users, {
+    fields: [jobs.assignedMechanicId],
+    references: [users.id],
+    relationName: "assignedJobs",
+  }),
+  bids: many(bids),
+  reviews: many(reviews),
+  messages: many(messages),
+}));
+
 // Bid model
 export const bids = pgTable("bids", {
   id: serial("id").primaryKey(),
@@ -104,6 +153,19 @@ export const bidInsertSchema = createInsertSchema(bids).omit({
 export type BidInsert = z.infer<typeof bidInsertSchema>;
 export type Bid = typeof bids.$inferSelect;
 
+// Bid relations
+export const bidsRelations = relations(bids, ({ one }) => ({
+  job: one(jobs, {
+    fields: [bids.jobId],
+    references: [jobs.id],
+  }),
+  mechanic: one(users, {
+    fields: [bids.mechanicId],
+    references: [users.id],
+    relationName: "mechanicBids",
+  }),
+}));
+
 // Review model
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
@@ -122,6 +184,24 @@ export const reviewInsertSchema = createInsertSchema(reviews).omit({
 
 export type ReviewInsert = z.infer<typeof reviewInsertSchema>;
 export type Review = typeof reviews.$inferSelect;
+
+// Review relations
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  job: one(jobs, {
+    fields: [reviews.jobId],
+    references: [jobs.id],
+  }),
+  user: one(users, {
+    fields: [reviews.userId],
+    references: [users.id],
+    relationName: "userReviews",
+  }),
+  mechanic: one(users, {
+    fields: [reviews.mechanicId],
+    references: [users.id],
+    relationName: "mechanicReviews",
+  }),
+}));
 
 // Message model
 export const messages = pgTable("messages", {
