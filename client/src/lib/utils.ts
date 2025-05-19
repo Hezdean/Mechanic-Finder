@@ -15,11 +15,11 @@ export function formatDate(dateString: string | Date): string {
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  // Using custom format with MK currency symbol
+  return `MK ${new Intl.NumberFormat('en-US', {
+    style: 'decimal',
     minimumFractionDigits: 0,
-  }).format(amount);
+  }).format(amount)}`;
 }
 
 export function shortenText(text: string, maxLength: number): string {
