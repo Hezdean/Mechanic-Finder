@@ -253,8 +253,14 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
           <Button 
             type="submit" 
             disabled={isSubmitting}
+            className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
-            {isSubmitting ? "Updating..." : "Update Profile"}
+            {isSubmitting ? (
+              <>
+                <span className="animate-spin inline-block mr-2">⟳</span>
+                Updating...
+              </>
+            ) : "Update Profile"}
           </Button>
         </div>
       </form>

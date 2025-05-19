@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -61,19 +62,36 @@ const Login = () => {
       
       const user = await response.json();
       
+      // Manually update auth state by calling the hook's login function
+      try {
+        await login(data);
+      } catch (e) {
+        // If the hook login fails, we already have the user data from direct fetch
+        console.log("Auth hook login failed, using direct response data");
+      }
+      
+      // Force update auth context by refreshing auth state
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.firstName}!`,
       });
       
-      // Redirect based on user role
-      if (user.role === "admin") {
-        navigate("/dashboard/admin");
-      } else if (user.role === "mechanic") {
-        navigate("/dashboard/mechanic");
-      } else {
-        navigate("/dashboard/user");
-      }
+      // Store user in session storage to maintain state
+      sessionStorage.setItem('currentUser', JSON.stringify(user));
+      
+      // Wait a moment for state to update before navigation
+      setTimeout(() => {
+        // Redirect based on user role
+        if (user.role === "admin") {
+          navigate("/dashboard/admin");
+        } else if (user.role === "mechanic") {
+          navigate("/dashboard/mechanic");
+        } else {
+          navigate("/dashboard/user");
+        }
+      }, 500);
     } catch (error: any) {
       toast({
         title: "Login failed",

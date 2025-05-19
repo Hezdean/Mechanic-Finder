@@ -44,6 +44,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
+  // Check if we have a stored user from session storage
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('currentUser');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (e) {
+        console.error("Failed to parse stored user:", e);
+        sessionStorage.removeItem('currentUser');
+      }
+    }
+  }, []);
+
   // Get current user
   const { isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
@@ -51,8 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (userData: any) => {
       if (userData) {
         setUser(userData);
+        // Store in session storage for persistence
+        sessionStorage.setItem('currentUser', JSON.stringify(userData));
       } else {
-        setUser(null);
+        const storedUser = sessionStorage.getItem('currentUser');
+        if (!storedUser) {
+          setUser(null);
+        }
       }
     },
     staleTime: 300000, // 5 minutes
