@@ -80,7 +80,7 @@ const Register = () => {
       if (data.role === "mechanic") {
         // Redirect to mechanic dashboard with a toast message about creating profile
         toast({
-          title: "Welcome to Same-Shit!",
+          title: "Welcome to Mechanic Finder!",
           description: "Please complete your mechanic profile to start receiving jobs.",
         });
         navigate("/dashboard/mechanic");
@@ -105,8 +105,8 @@ const Register = () => {
   return (
     <>
       <Helmet>
-        <title>Create Account - Same-Shit Auto Repairs</title>
-        <meta name="description" content="Create your Same-Shit account to access auto repair services or offer your mechanic skills." />
+        <title>Create Account - Mechanic Finder Auto Repairs</title>
+        <meta name="description" content="Create your Mechanic Finder account to access auto repair services or offer your mechanic skills." />
       </Helmet>
       
       <div className="container max-w-screen-md mx-auto px-4 py-16">
@@ -114,7 +114,7 @@ const Register = () => {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">Create your account</CardTitle>
             <CardDescription className="text-center">
-              Enter your details to create your Same-Shit account
+              Enter your details to create your Mechanic Finder account
             </CardDescription>
           </CardHeader>
           <CardContent>

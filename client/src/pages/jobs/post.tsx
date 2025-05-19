@@ -246,7 +246,7 @@ const PostJob = () => {
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Your budget for this repair (in USD)"
+                          placeholder="Your budget for this repair (in Malawi Kwacha)"
                           {...field}
                           disabled={isSubmitting}
                         />

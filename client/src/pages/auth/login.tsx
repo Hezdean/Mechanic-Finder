@@ -64,8 +64,8 @@ const Login = () => {
   return (
     <>
       <Helmet>
-        <title>Sign In - Same-Shit Auto Repairs</title>
-        <meta name="description" content="Sign in to your Same-Shit account to access your dashboard, post jobs, or bid on auto repair work." />
+        <title>Sign In - Mechanic Finder</title>
+        <meta name="description" content="Sign in to your Mechanic Finder account to access your dashboard, post jobs, or bid on auto repair work." />
       </Helmet>
       
       <div className="container flex h-screen max-w-screen-md mx-auto items-center justify-center px-4 py-16">
@@ -107,7 +107,7 @@ const Login = () => {
                 />
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary-500 hover:bg-primary-600" 
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -126,7 +126,7 @@ const Login = () => {
             <div className="text-center text-sm mt-2">
               <span className="text-muted-foreground">Don't have an account? </span>
               <Link href="/register">
-                <a className="text-primary-500 hover:underline">Sign up</a>
+                <a className="text-primary hover:underline">Sign up</a>
               </Link>
             </div>
           </CardFooter>
