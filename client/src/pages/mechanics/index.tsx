@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation, Link } from "wouter";
 import { Helmet } from "react-helmet";
-import { Link } from "wouter";
 import {
   Card,
   CardContent,
@@ -10,105 +10,77 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
+import { Input } from "@/components/ui/input";
+import { Search, Filter } from "lucide-react";
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import MechanicCard from "@/components/mechanic/MechanicCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Filter, Search } from "lucide-react";
 
-// Mechanic card skeleton for loading state
-const SkeletonMechanicCard = () => (
-  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-    <div className="p-6">
-      <div className="flex items-center">
-        <Skeleton className="h-14 w-14 rounded-full" />
-        <div className="ml-4 space-y-2">
-          <Skeleton className="h-5 w-36" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-      </div>
-      <div className="mt-4 flex space-x-2">
-        <Skeleton className="h-6 w-24 rounded-full" />
-        <Skeleton className="h-6 w-20 rounded-full" />
-        <Skeleton className="h-6 w-28 rounded-full" />
-      </div>
-      <Skeleton className="mt-4 h-4 w-full" />
-      <Skeleton className="mt-2 h-4 w-3/4" />
-      <div className="mt-4 flex justify-between items-center">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-8 w-28" />
-      </div>
-    </div>
-  </div>
-);
-
-const Mechanics = () => {
-  const [specializationFilter, setSpecializationFilter] = useState<string>("all");
+const FindMechanics = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [specializationFilter, setSpecializationFilter] = useState<string>("all");
 
   // Fetch all mechanic profiles
-  const { data: mechanicProfiles, isLoading } = useQuery({
+  const { data: mechanics, isLoading } = useQuery({
     queryKey: ['/api/mechanic-profiles'],
-    select: (data) => data
-      .filter((profile: any) => profile.user && profile.isVerified)
-      .map((profile: any) => ({
-        ...profile,
-        fullName: profile.user ? `${profile.user.firstName} ${profile.user.lastName}` : 'Unknown'
-      }))
   });
 
-  // Get unique specializations for filter dropdown
-  const allSpecializations = mechanicProfiles?.flatMap((profile: any) => 
-    profile.specializations || []
-  ).filter((value: string, index: number, self: string[]) => 
-    self.indexOf(value) === index
-  ) || [];
-
   // Apply filters
-  const filteredMechanics = mechanicProfiles?.filter((profile: any) => {
+  const filteredMechanics = mechanics ? mechanics.filter((mechanic: any) => {
     // Filter by specialization
     if (specializationFilter !== "all" && 
-        (!profile.specializations || !profile.specializations.includes(specializationFilter))) {
+        !mechanic.specializations?.some((s: string) => s.toLowerCase().includes(specializationFilter.toLowerCase()))) {
       return false;
     }
 
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const fullName = profile.fullName.toLowerCase();
-      const bio = profile.user?.bio?.toLowerCase() || '';
-      const city = profile.user?.city?.toLowerCase() || '';
-      const state = profile.user?.state?.toLowerCase() || '';
-      const specializations = profile.specializations?.join(' ').toLowerCase() || '';
+      const userFirstName = mechanic.user?.firstName?.toLowerCase() || '';
+      const userLastName = mechanic.user?.lastName?.toLowerCase() || '';
+      const specializations = mechanic.specializations?.join(' ').toLowerCase() || '';
+      const servicesOffered = mechanic.servicesOffered?.join(' ').toLowerCase() || '';
       
-      return fullName.includes(query) || 
-             bio.includes(query) || 
-             `${city} ${state}`.includes(query) ||
-             specializations.includes(query);
+      return (
+        userFirstName.includes(query) ||
+        userLastName.includes(query) ||
+        specializations.includes(query) ||
+        servicesOffered.includes(query) ||
+        mechanic.city?.toLowerCase().includes(query) ||
+        mechanic.state?.toLowerCase().includes(query)
+      );
     }
 
     return true;
-  });
+  }) : [];
+
+  // Get unique specializations for filter dropdown
+  const allSpecializations = mechanics?.flatMap((mechanic: any) => 
+    mechanic.specializations || []
+  ).filter((value: string, index: number, self: string[]) => 
+    self.indexOf(value) === index
+  ) || [];
 
   return (
     <>
       <Helmet>
-        <title>Find Mechanics - Same-Shit Auto Repairs</title>
-        <meta name="description" content="Find qualified and verified mechanics in your area. Browse mechanics by specialization and read reviews from other car owners." />
+        <title>Find a Mechanic - Mechanic Finder</title>
+        <meta name="description" content="Find skilled mechanics in your area. Browse by specialization, location, and ratings to find the perfect mechanic for your auto repair needs." />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Find Mechanics</h1>
-          <p className="text-muted-foreground">
-            Browse verified mechanics with the skills to get your car back on the road
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Find a Mechanic</h1>
+            <p className="text-muted-foreground">
+              Browse skilled mechanics ready to help with your vehicle repairs
+            </p>
+          </div>
         </div>
 
         {/* Filters */}
@@ -119,7 +91,7 @@ const Mechanics = () => {
               Filter Mechanics
             </CardTitle>
             <CardDescription>
-              Find mechanics that match your specific repair needs
+              Find mechanics based on your specific needs
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -138,7 +110,7 @@ const Mechanics = () => {
                   <SelectContent>
                     <SelectItem value="all">All Specializations</SelectItem>
                     {allSpecializations.map((spec: string) => (
-                      <SelectItem key={spec} value={spec}>
+                      <SelectItem key={spec} value={spec.toLowerCase()}>
                         {spec}
                       </SelectItem>
                     ))}
@@ -153,7 +125,7 @@ const Mechanics = () => {
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by name, location, specialization..."
+                    placeholder="Search by name, skill, location..."
                     className="pl-8"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -169,23 +141,48 @@ const Mechanics = () => {
           {isLoading ? (
             // Loading state
             Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonMechanicCard key={i} />
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="rounded-full bg-neutral-200 h-12 w-12 mr-3"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-neutral-200 rounded w-24"></div>
+                      <div className="h-3 bg-neutral-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-neutral-200 rounded w-full"></div>
+                    <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-1">
+                    <div className="h-6 bg-neutral-200 rounded w-16"></div>
+                    <div className="h-6 bg-neutral-200 rounded w-20"></div>
+                    <div className="h-6 bg-neutral-200 rounded w-24"></div>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-neutral-200">
+                    <div className="flex justify-between items-center">
+                      <div className="h-4 bg-neutral-200 rounded w-1/3"></div>
+                      <div className="h-8 bg-neutral-200 rounded w-1/4"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))
           ) : filteredMechanics?.length ? (
-            filteredMechanics.map((profile: any) => (
+            filteredMechanics.map((mechanic: any) => (
               <MechanicCard
-                key={profile.id}
-                id={profile.id}
-                userId={profile.userId}
-                firstName={profile.user.firstName}
-                lastName={profile.user.lastName}
-                profilePicture={profile.user.profilePicture}
-                city={profile.user.city || ""}
-                state={profile.user.state || ""}
-                specializations={profile.specializations || []}
-                rating={profile.rating}
-                reviewCount={profile.reviewCount}
-                bio={profile.user.bio || `${profile.user.firstName} is a verified mechanic with ${profile.yearsOfExperience}+ years of experience.`}
+                key={mechanic.id}
+                id={mechanic.id}
+                userId={mechanic.userId}
+                firstName={mechanic.user?.firstName || ""}
+                lastName={mechanic.user?.lastName || ""}
+                profilePicture={mechanic.user?.profilePicture}
+                city={mechanic.user?.city || ""}
+                state={mechanic.user?.state || ""}
+                specializations={mechanic.specializations || []}
+                rating={mechanic.rating / 10}
+                reviewCount={mechanic.reviewCount}
+                bio={mechanic.bio || ""}
               />
             ))
           ) : (
@@ -196,11 +193,6 @@ const Mechanics = () => {
                   ? "No mechanics match your search criteria. Try adjusting your filters or search query."
                   : "There are no verified mechanics available at the moment. Check back soon!"}
               </p>
-              <Link href="/">
-                <Button className="mt-6 bg-primary-500 hover:bg-primary-600">
-                  Back to Home
-                </Button>
-              </Link>
             </div>
           )}
         </div>
@@ -209,4 +201,4 @@ const Mechanics = () => {
   );
 };
 
-export default Mechanics;
+export default FindMechanics;
