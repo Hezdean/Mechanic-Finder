@@ -250,6 +250,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // PATCH route for partial updates to mechanic profiles
+  app.patch('/api/mechanic-profiles/:id', isAuthenticated, async (req, res) => {
+    try {
+      const profileId = parseInt(req.params.id);
+      const profile = await storage.getMechanicProfile(profileId);
+      
+      if (!profile) {
+        return res.status(404).json({ message: "Mechanic profile not found" });
+      }
+      
+      // Only allow the owner or admin to update the profile
+      if (profile.userId !== (req.user as any).id && (req.user as any).role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const updatedProfile = await storage.updateMechanicProfile(profileId, req.body);
+      res.json(updatedProfile);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating mechanic profile", error });
+    }
+  });
+  
   app.get('/api/mechanic-profiles', async (req, res) => {
     try {
       let limit = req.query.limit ? parseInt(req.query.limit as string) : 0;

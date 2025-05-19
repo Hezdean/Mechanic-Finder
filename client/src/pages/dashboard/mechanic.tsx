@@ -62,8 +62,10 @@ import {
   MessageSquare,
   UserCheck,
   FileText,
-  Award
+  Award,
+  Edit
 } from "lucide-react";
+import { EditProfileForm } from "@/components/mechanic/EditProfileForm";
 
 const createProfileSchema = z.object({
   specializations: z.string().min(1, "Please provide at least one specialization"),
@@ -92,6 +94,7 @@ const MechanicDashboard = () => {
   const [isProfileFormOpen, setIsProfileFormOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [isBidFormOpen, setIsBidFormOpen] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   // Redirect if not mechanic
   if (!user || user.role !== "mechanic") {
@@ -833,6 +836,27 @@ const MechanicDashboard = () => {
           </Tabs>
         )}
       </div>
+      
+      {/* Edit Profile Dialog */}
+      {showEditProfile && profile && (
+        <Dialog open={showEditProfile} onOpenChange={setShowEditProfile}>
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Your Mechanic Profile</DialogTitle>
+              <DialogDescription>
+                Update your profile information to help customers find and hire you.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="mt-4">
+              <EditProfileForm 
+                profile={profile} 
+                onSuccess={() => setShowEditProfile(false)} 
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Profile Creation Dialog */}
       <Dialog open={isProfileFormOpen} onOpenChange={setIsProfileFormOpen}>

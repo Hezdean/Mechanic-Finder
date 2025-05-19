@@ -19,15 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { CertificationsInput } from "./CertificationsInput";
-import { ServicesInput } from "./ServicesInput";
-import { SpecializationsInput } from "./SpecializationsInput";
 
 const profileSchema = z.object({
   bio: z.string().optional(),
-  specializations: z.array(z.string()).min(1, { message: "At least one specialization is required" }),
-  servicesOffered: z.array(z.string()).min(1, { message: "At least one service is required" }),
-  certifications: z.array(z.string()).optional(),
+  specializations: z.string().min(1, { message: "Please provide at least one specialization" }),
+  servicesOffered: z.string().min(1, { message: "Please provide at least one service" }),
+  certifications: z.string().optional(),
   yearsOfExperience: z.coerce.number().min(0, { message: "Must be a positive number" }),
   hourlyRate: z.coerce.number().min(0, { message: "Must be a positive number" }),
   isMobile: z.boolean().default(false),
@@ -45,11 +42,12 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Convert array fields to comma-separated strings for the form
   const defaultValues: Partial<ProfileFormValues> = {
     bio: profile?.bio || "",
-    specializations: profile?.specializations || [],
-    servicesOffered: profile?.servicesOffered || [],
-    certifications: profile?.certifications || [],
+    specializations: profile?.specializations ? profile.specializations.join(", ") : "",
+    servicesOffered: profile?.servicesOffered ? profile.servicesOffered.join(", ") : "",
+    certifications: profile?.certifications ? profile.certifications.join(", ") : "",
     yearsOfExperience: profile?.yearsOfExperience || 0,
     hourlyRate: profile?.hourlyRate || 0,
     isMobile: profile?.isMobile || false,
@@ -61,8 +59,16 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: (data: ProfileFormValues) => 
-      apiRequest(`/api/mechanic-profiles/${profile.id}`, "PATCH", data),
+    mutationFn: (data: ProfileFormValues) => {
+      // Convert comma-separated strings back to arrays for the API
+      const formattedData = {
+        ...data,
+        specializations: data.specializations.split(",").map(s => s.trim()).filter(s => s),
+        servicesOffered: data.servicesOffered.split(",").map(s => s.trim()).filter(s => s),
+        certifications: data.certifications ? data.certifications.split(",").map(s => s.trim()).filter(s => s) : [],
+      };
+      return apiRequest(`/api/mechanic-profiles/${profile.id}`, "PATCH", formattedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mechanic-profiles"] });
       queryClient.invalidateQueries({ queryKey: [`/api/mechanic-profiles/user/${profile.userId}`] });
@@ -183,13 +189,13 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
             <FormItem>
               <FormLabel>Specializations</FormLabel>
               <FormControl>
-                <SpecializationsInput
-                  value={field.value}
-                  onChange={field.onChange}
+                <Input
+                  placeholder="Engine Repair, Brake Systems, Electrical Systems, etc."
+                  {...field}
                 />
               </FormControl>
               <FormDescription>
-                What type of repairs do you specialize in? (e.g., Engine Repair, Brake Systems)
+                Enter specializations separated by commas (e.g., Engine Repair, Brake Systems)
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -203,13 +209,13 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
             <FormItem>
               <FormLabel>Services Offered</FormLabel>
               <FormControl>
-                <ServicesInput
-                  value={field.value}
-                  onChange={field.onChange}
+                <Input
+                  placeholder="Oil Change, Tire Rotation, Brake Repair, etc."
+                  {...field}
                 />
               </FormControl>
               <FormDescription>
-                List the services you provide (e.g., Oil Change, Tire Rotation)
+                Enter services separated by commas (e.g., Oil Change, Tire Rotation)
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -221,15 +227,15 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
           name="certifications"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Certifications</FormLabel>
+              <FormLabel>Certifications (Optional)</FormLabel>
               <FormControl>
-                <CertificationsInput
-                  value={field.value}
-                  onChange={field.onChange}
+                <Input
+                  placeholder="ASE Master Technician, BMW Certified, etc."
+                  {...field}
                 />
               </FormControl>
               <FormDescription>
-                Add any professional certifications you've earned
+                Enter certifications separated by commas
               </FormDescription>
               <FormMessage />
             </FormItem>
