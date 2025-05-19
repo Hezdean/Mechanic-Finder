@@ -31,6 +31,12 @@ const Jobs = () => {
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['/api/jobs'],
   });
+  
+  // Fetch mechanic's existing bids if user is a mechanic
+  const { data: mechanicBids } = useQuery({
+    queryKey: ['/api/bids/mechanic'],
+    enabled: isAuthenticated && user?.role === 'mechanic',
+  });
 
   // Apply filters
   const filteredJobs = jobs?.filter((job: any) => {
@@ -56,7 +62,7 @@ const Jobs = () => {
   return (
     <>
       <Helmet>
-        <title>Browse Repair Jobs - Same-Shit Auto Repairs</title>
+        <title>Browse Repair Jobs - Mechanic Finder</title>
         <meta name="description" content="Find auto repair jobs that match your skills. Browse all open repair requests or filter by location and vehicle type." />
       </Helmet>
       
