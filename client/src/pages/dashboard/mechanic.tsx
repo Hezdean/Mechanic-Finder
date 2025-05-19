@@ -277,6 +277,152 @@ const MechanicDashboard = () => {
           <h1 className="text-3xl font-bold mb-2">Mechanic Dashboard</h1>
           <p className="text-muted-foreground">Manage your mechanic profile, bids, and active jobs</p>
         </div>
+        
+        {/* Profile Creation Dialog */}
+        <Dialog open={isProfileFormOpen} onOpenChange={setIsProfileFormOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create Your Mechanic Profile</DialogTitle>
+              <DialogDescription>
+                Provide your professional details to get started as a mechanic on our platform.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Form {...profileForm}>
+              <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+                <FormField
+                  control={profileForm.control}
+                  name="specializations"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Specializations</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Engine Repair, Transmission, Diagnostics (comma separated)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={profileForm.control}
+                  name="yearsOfExperience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Years of Experience</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={0} placeholder="10" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={profileForm.control}
+                  name="certifications"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Certifications (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ASE, BMW Certified (comma separated)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={profileForm.control}
+                  name="hourlyRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hourly Rate ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={0} placeholder="75" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={profileForm.control}
+                  name="isMobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Do you offer mobile services?</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an option" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={profileForm.control}
+                  name="servicesOffered"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Services Offered</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Oil Change, Tire Rotation, Brake Repair (comma separated)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={profileForm.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>About You (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Tell customers about your experience and qualifications..."
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <DialogFooter className="mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsProfileFormOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-accent hover:bg-accent/90"
+                    disabled={createProfileMutation.isPending}
+                  >
+                    {createProfileMutation.isPending ? "Creating..." : "Create Profile"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
 
         {isLoadingProfile ? (
           <div className="text-center py-8">Loading your profile...</div>
