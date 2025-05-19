@@ -482,15 +482,26 @@ const MechanicDashboard = () => {
           // Profile overview when profile exists
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <UserCheck className="mr-2 h-5 w-5 text-primary-500" />
-                Mechanic Profile
-                {profile.isVerified ? (
-                  <Badge className="ml-3 bg-green-100 text-green-800">Verified</Badge>
-                ) : (
-                  <Badge className="ml-3 bg-amber-100 text-amber-800">Pending Verification</Badge>
-                )}
-              </CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <UserCheck className="mr-2 h-5 w-5 text-primary-500" />
+                  Mechanic Profile
+                  {profile.isVerified ? (
+                    <Badge className="ml-3 bg-green-100 text-green-800">Verified</Badge>
+                  ) : (
+                    <Badge className="ml-3 bg-amber-100 text-amber-800">Pending Verification</Badge>
+                  )}
+                </CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center"
+                  onClick={() => setShowEditProfile(true)}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Edit Profile
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
