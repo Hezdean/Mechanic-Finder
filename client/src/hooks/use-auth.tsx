@@ -48,9 +48,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
     queryFn: getQueryFn({ on401: "returnNull" }),
-    onSuccess: (data) => {
-      if (data) {
-        setUser(data);
+    onSuccess: (userData: any) => {
+      if (userData) {
+        setUser(userData);
       } else {
         setUser(null);
       }
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginCredentials) => 
-      apiRequest('POST', '/api/auth/login', credentials)
+      apiRequest('/api/auth/login', 'POST', credentials)
         .then(res => res.json()),
     onSuccess: (data) => {
       setUser(data);
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Logout mutation
   const logoutMutation = useMutation({
-    mutationFn: () => apiRequest('POST', '/api/auth/logout'),
+    mutationFn: () => apiRequest('/api/auth/logout', 'POST'),
     onSuccess: () => {
       setUser(null);
       queryClient.invalidateQueries();
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (data: RegisterData) => 
-      apiRequest('POST', '/api/users', data)
+      apiRequest('/api/users', 'POST', data)
         .then(res => res.json()),
     onSuccess: (data) => {
       toast({
