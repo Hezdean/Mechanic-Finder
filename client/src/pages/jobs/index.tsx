@@ -33,13 +33,13 @@ const Jobs = () => {
   });
   
   // Fetch mechanic's existing bids if user is a mechanic
-  const { data: mechanicBids } = useQuery({
-    queryKey: ['/api/bids/mechanic'],
+  const { data: mechanicBids = [] } = useQuery({
+    queryKey: ['/api/mechanic/bids'],
     enabled: isAuthenticated && user?.role === 'mechanic',
   });
 
   // Apply filters
-  const filteredJobs = jobs?.filter((job: any) => {
+  const filteredJobs = jobs ? jobs.filter((job: any) => {
     // Filter by status
     if (statusFilter !== "all" && job.status !== statusFilter) {
       return false;
@@ -57,7 +57,7 @@ const Jobs = () => {
     }
 
     return true;
-  });
+  }) : [];
 
   return (
     <>
@@ -171,6 +171,10 @@ const Jobs = () => {
                 description={job.description}
                 createdAt={job.createdAt}
                 bidCount={job.bidCount || 0}
+                isAuthenticated={isAuthenticated}
+                userRole={user?.role}
+                userId={user?.id}
+                hasBid={mechanicBids?.some((bid: any) => bid.jobId === job.id)}
               />
             ))
           ) : (

@@ -365,6 +365,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Bid routes
+  // Get all bids for the current mechanic
+  app.get('/api/mechanic/bids', isAuthenticated, hasRole('mechanic'), async (req, res) => {
+    try {
+      const mechanicId = (req.user as any).id;
+      const bids = await storage.listBidsByMechanicId(mechanicId);
+      res.json(bids);
+    } catch (error) {
+      res.status(500).json({ message: "Error retrieving mechanic bids", error });
+    }
+  });
+
   app.post('/api/bids', isAuthenticated, hasRole('mechanic'), validateRequest(bidInsertSchema), async (req, res) => {
     try {
       // Check if job exists

@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import JobCard from "@/components/job/JobCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
 
 const SkeletonJobCard = () => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -28,9 +29,16 @@ const SkeletonJobCard = () => (
 );
 
 const RecentJobs = () => {
+  const { user, isAuthenticated } = useAuth();
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['/api/jobs?limit=3'],
     select: (data) => data?.filter(job => job.status === 'open' || job.status === 'in_progress').slice(0, 3)
+  });
+  
+  // Fetch mechanic's existing bids if user is a mechanic
+  const { data: mechanicBids = [] } = useQuery({
+    queryKey: ['/api/mechanic/bids'],
+    enabled: isAuthenticated && user?.role === 'mechanic',
   });
 
   return (
@@ -60,6 +68,10 @@ const RecentJobs = () => {
                 description={job.description}
                 createdAt={job.createdAt}
                 bidCount={job.bidCount || 0}
+                isAuthenticated={isAuthenticated}
+                userRole={user?.role}
+                userId={user?.id}
+                hasBid={mechanicBids?.some((bid: any) => bid.jobId === job.id)}
               />
             ))
           ) : (
