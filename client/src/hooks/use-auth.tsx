@@ -44,16 +44,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  // Check if we have a stored user from session storage
+  // Check if we have a stored user from session storage or local storage
   useEffect(() => {
-    const storedUser = sessionStorage.getItem('currentUser');
-    if (storedUser) {
+    // Try session storage first
+    const sessionUser = sessionStorage.getItem('currentUser');
+    if (sessionUser) {
       try {
-        const parsedUser = JSON.parse(storedUser);
+        const parsedUser = JSON.parse(sessionUser);
         setUser(parsedUser);
+        return; // Exit if we found user in session storage
       } catch (e) {
-        console.error("Failed to parse stored user:", e);
+        console.error("Failed to parse stored user from session storage:", e);
         sessionStorage.removeItem('currentUser');
+      }
+    }
+    
+    // Try local storage as fallback
+    const localUser = localStorage.getItem('currentUser');
+    if (localUser) {
+      try {
+        const parsedUser = JSON.parse(localUser);
+        setUser(parsedUser);
+        // Also update session storage
+        sessionStorage.setItem('currentUser', localUser);
+      } catch (e) {
+        console.error("Failed to parse stored user from local storage:", e);
+        localStorage.removeItem('currentUser');
       }
     }
   }, []);
@@ -84,6 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .then(res => res.json()),
     onSuccess: (data) => {
       setUser(data);
+      // Store user data in both storages for persistence
+      localStorage.setItem('currentUser', JSON.stringify(data));
+      sessionStorage.setItem('currentUser', JSON.stringify(data));
       queryClient.invalidateQueries({queryKey: ['/api/auth/me']});
       toast({
         title: "Login successful",
@@ -104,6 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: () => apiRequest('/api/auth/logout', 'POST'),
     onSuccess: () => {
       setUser(null);
+      // Clear storage on logout
+      localStorage.removeItem('currentUser');
+      sessionStorage.removeItem('currentUser');
       queryClient.invalidateQueries();
       toast({
         title: "Logged out",
@@ -112,11 +134,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       navigate("/");
     },
     onError: (error) => {
+      // Even if the API call fails, we should still clear local storage
+      setUser(null);
+      localStorage.removeItem('currentUser');
+      sessionStorage.removeItem('currentUser');
+      
       toast({
-        title: "Logout failed",
-        description: error.message || "Something went wrong",
-        variant: "destructive",
+        title: "Logged out",
+        description: "You have been logged out",
       });
+      navigate("/");
     },
   });
 

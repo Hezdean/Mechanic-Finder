@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Login from "@/pages/auth/login";
 import DirectLogin from "@/pages/auth/direct-login";
 import SimpleLogin from "@/pages/auth/simple-login";
+import QuickLogin from "@/pages/quick-login";
 import Register from "@/pages/auth/register";
 import AdminDashboard from "@/pages/dashboard/admin";
 import MechanicDashboard from "@/pages/dashboard/mechanic";
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/direct-login" component={DirectLogin} />
         <Route path="/simple-login" component={SimpleLogin} />
+        <Route path="/quick-login" component={QuickLogin} />
         <Route path="/register" component={Register} />
         <Route path="/dashboard/admin" component={AdminDashboard} />
         <Route path="/dashboard/mechanic" component={MechanicDashboard} />
