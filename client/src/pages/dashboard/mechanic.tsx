@@ -268,7 +268,7 @@ const MechanicDashboard = () => {
   return (
     <>
       <Helmet>
-        <title>Mechanic Dashboard - Same-Shit Auto Repairs</title>
+        <title>Mechanic Dashboard - Mechanic Finder</title>
         <meta name="description" content="Mechanic dashboard to manage your auto repair services, bids, and jobs." />
       </Helmet>
       
@@ -607,10 +607,10 @@ const MechanicDashboard = () => {
                                   </Button>
                                   <Button 
                                     size="sm" 
-                                    className="bg-secondary-500 hover:bg-secondary-600"
+                                    className="bg-accent hover:bg-accent/90 text-accent-foreground"
                                     onClick={() => handleBidOnJob(job.id)}
                                   >
-                                    Bid
+                                    <Wrench className="mr-1 h-4 w-4" /> Bid
                                   </Button>
                                 </div>
                               </TableCell>
