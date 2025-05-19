@@ -144,7 +144,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
             name="hourlyRate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Hourly Rate ($)</FormLabel>
+                <FormLabel>Hourly Rate (MK)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -230,7 +230,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
               <FormLabel>Certifications (Optional)</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="ASE Master Technician, BMW Certified, etc."
+                  placeholder="LTC Master Technician, TEVET Certified, etc."
                   {...field}
                 />
               </FormControl>
