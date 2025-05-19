@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import BidForm from "@/components/job/BidForm";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -52,6 +53,7 @@ const JobDetails = () => {
   const { toast } = useToast();
   const [isAcceptBidDialogOpen, setIsAcceptBidDialogOpen] = useState(false);
   const [selectedBidId, setSelectedBidId] = useState<number | null>(null);
+  const [isBidFormOpen, setIsBidFormOpen] = useState(false);
 
   // Fetch job details
   const {
@@ -144,9 +146,19 @@ const JobDetails = () => {
   return (
     <>
       <Helmet>
-        <title>{job.title} - Same-Shit Auto Repairs</title>
+        <title>{job.title} - Mechanic Finder</title>
         <meta name="description" content={`${job.title} - ${job.vehicle} repair job in ${job.location}.`} />
       </Helmet>
+      
+      {/* Bid Form for mechanics */}
+      {user && isBidFormOpen && (
+        <BidForm 
+          isOpen={isBidFormOpen}
+          onClose={() => setIsBidFormOpen(false)}
+          jobId={jobId}
+          mechanicId={user.id}
+        />
+      )}
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -316,8 +328,8 @@ const JobDetails = () => {
                 <CardFooter className="flex justify-between">
                   {canBidOnJob && !hasBid ? (
                     <Button 
-                      className="w-full bg-secondary-500 hover:bg-secondary-600"
-                      onClick={() => navigate(`/dashboard/mechanic`)}
+                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                      onClick={() => setIsBidFormOpen(true)}
                     >
                       Place a Bid
                     </Button>
