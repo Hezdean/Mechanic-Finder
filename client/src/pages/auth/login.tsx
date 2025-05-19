@@ -43,7 +43,28 @@ const Login = () => {
   const onSubmit = async (data: FormValues) => {
     try {
       setIsLoading(true);
-      const user = await login(data);
+      
+      // Direct fetch approach for login to avoid auth hook issues
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Login failed');
+      }
+      
+      const user = await response.json();
+      
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${user.firstName}!`,
+      });
       
       // Redirect based on user role
       if (user.role === "admin") {
@@ -53,9 +74,13 @@ const Login = () => {
       } else {
         navigate("/dashboard/user");
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid username or password",
+        variant: "destructive",
+      });
       console.error("Login error:", error);
-      // Toast is already handled in the useAuth hook
     } finally {
       setIsLoading(false);
     }
