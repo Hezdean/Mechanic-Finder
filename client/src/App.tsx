@@ -7,6 +7,8 @@ import NotFound from "@/pages/not-found";
 import { AuthProvider } from "@/hooks/use-auth";
 import Home from "@/pages/home";
 import Login from "@/pages/auth/login";
+import DirectLogin from "@/pages/auth/direct-login";
+import SimpleLogin from "@/pages/auth/simple-login";
 import Register from "@/pages/auth/register";
 import AdminDashboard from "@/pages/dashboard/admin";
 import MechanicDashboard from "@/pages/dashboard/mechanic";
@@ -27,6 +29,8 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/login" component={Login} />
+        <Route path="/direct-login" component={DirectLogin} />
+        <Route path="/simple-login" component={SimpleLogin} />
         <Route path="/register" component={Register} />
         <Route path="/dashboard/admin" component={AdminDashboard} />
         <Route path="/dashboard/mechanic" component={MechanicDashboard} />
