@@ -230,6 +230,7 @@ const MechanicDashboard = () => {
   });
 
   const onProfileSubmit = (data: CreateProfileFormValues) => {
+    console.log("Submitting profile form with data:", data);
     // Convert form string values to appropriate types
     const processedData = {
       userId: user.id,
@@ -242,7 +243,39 @@ const MechanicDashboard = () => {
       verificationDocuments: [], // These would be handled with file uploads in a real app
     };
     
-    createProfileMutation.mutate(processedData);
+    // Directly make API call to ensure form submission works
+    fetch('/api/mechanic-profiles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify(processedData)
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.message || "Failed to create profile");
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      queryClient.invalidateQueries({ queryKey: [`/api/mechanic-profiles/user/${user.id}`] });
+      setIsProfileFormOpen(false);
+      toast({
+        title: "Profile created",
+        description: "Your mechanic profile has been created successfully.",
+      });
+    })
+    .catch(error => {
+      console.error("Error creating profile:", error);
+      toast({
+        title: "Profile creation failed",
+        description: error.message || "Failed to create your profile. Please try again.",
+        variant: "destructive",
+      });
+    });
   };
 
   const onBidSubmit = (data: CreateBidFormValues) => {
