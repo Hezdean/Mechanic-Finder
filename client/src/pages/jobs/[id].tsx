@@ -221,90 +221,162 @@ const JobDetails = () => {
               {/* Bids Section */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Bids ({job.bids?.length || 0})</CardTitle>
-                  <CardDescription>
-                    {job.status === 'open' 
-                      ? "Mechanics who have placed bids on this job" 
-                      : job.status === 'in_progress'
-                      ? "This job has been assigned to a mechanic"
-                      : "This job has been completed"
-                    }
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Received Bids ({job.bids?.length || 0})</CardTitle>
+                      <CardDescription>
+                        {job.status === 'open' 
+                          ? isJobOwner 
+                            ? "Compare bids and choose the best mechanic for your job"
+                            : "Mechanics who have placed bids on this job" 
+                          : job.status === 'in_progress'
+                          ? "This job has been assigned to a mechanic"
+                          : "This job has been completed"
+                        }
+                      </CardDescription>
+                    </div>
+                    {isJobOwner && job.bids?.length > 0 && job.status === 'open' && (
+                      <div className="text-sm text-muted-foreground">
+                        <p>Lowest: {formatCurrency(Math.min(...job.bids.map((b: any) => b.amount)))}</p>
+                        <p>Highest: {formatCurrency(Math.max(...job.bids.map((b: any) => b.amount)))}</p>
+                      </div>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {job.bids?.length > 0 ? (
-                    <div className="space-y-6">
-                      {job.bids.map((bid: any) => (
+                    <div className="space-y-4">
+                      {/* Sort bids by amount for job owners */}
+                      {[...job.bids]
+                        .sort((a: any, b: any) => isJobOwner ? a.amount - b.amount : 0)
+                        .map((bid: any, index: number) => (
                         <div 
                           key={bid.id} 
-                          className={`border rounded-lg p-4 ${
-                            bid.status === 'accepted' ? 'border-green-300 bg-green-50' : 'border-gray-200'
-                          }`}
+                          className={`border rounded-lg p-5 transition-all hover:shadow-md ${
+                            bid.status === 'accepted' 
+                              ? 'border-green-300 bg-green-50 shadow-md' 
+                              : 'border-gray-200 hover:border-primary/30'
+                          } ${isJobOwner && job.status === 'open' ? 'cursor-pointer' : ''}`}
                         >
-                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
-                            <div className="flex items-center mb-2 sm:mb-0">
-                              <Avatar className="h-10 w-10 mr-3">
+                          {/* Best Value Badge for lowest bid */}
+                          {isJobOwner && job.status === 'open' && index === 0 && job.bids.length > 1 && (
+                            <div className="mb-3">
+                              <Badge className="bg-accent text-white">
+                                Best Value
+                              </Badge>
+                            </div>
+                          )}
+                          
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
+                            <div className="flex items-start mb-3 sm:mb-0 flex-1">
+                              <Avatar className="h-12 w-12 mr-4">
                                 <AvatarImage src={bid.mechanic?.profilePicture} />
-                                <AvatarFallback>
+                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                                   {bid.mechanic ? bid.mechanic.firstName.charAt(0) + bid.mechanic.lastName.charAt(0) : 'M'}
                                 </AvatarFallback>
                               </Avatar>
-                              <div>
-                                <h3 className="font-medium">
-                                  {bid.mechanic 
-                                    ? getFullName(bid.mechanic.firstName, bid.mechanic.lastName) 
-                                    : 'Mechanic'}
-                                </h3>
+                              <div className="flex-1">
+                                <div className="flex items-center mb-1">
+                                  <h3 className="font-semibold text-lg mr-2">
+                                    {bid.mechanic 
+                                      ? getFullName(bid.mechanic.firstName, bid.mechanic.lastName) 
+                                      : 'Mechanic'}
+                                  </h3>
+                                  <Link href={`/mechanics/${bid.mechanicProfile?.id}`}>
+                                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 p-0 h-auto">
+                                      View Profile
+                                    </Button>
+                                  </Link>
+                                </div>
                                 {bid.mechanicProfile && (
-                                  <div className="flex items-center">
+                                  <div className="flex items-center mb-2">
                                     <Rating 
                                       value={bid.mechanicProfile.rating} 
                                       count={bid.mechanicProfile.reviewCount}
                                       size="sm"
                                     />
+                                    <span className="ml-2 text-sm text-muted-foreground">
+                                      {bid.mechanicProfile.yearsOfExperience} years experience
+                                    </span>
+                                  </div>
+                                )}
+                                {bid.mechanicProfile?.specializations && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {bid.mechanicProfile.specializations.slice(0, 3).map((spec: string, i: number) => (
+                                      <Badge key={i} variant="secondary" className="text-xs">
+                                        {spec}
+                                      </Badge>
+                                    ))}
                                   </div>
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center">
-                              <span className="font-semibold text-lg text-primary-600 mr-3">
-                                {formatCurrency(bid.amount)}
-                              </span>
-                              <Badge className={getBidStatusBadgeColor(bid.status)}>
-                                {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
-                              </Badge>
+                            
+                            <div className="text-right">
+                              <div className="flex items-center justify-end mb-2">
+                                <span className="font-bold text-2xl text-primary mr-2">
+                                  {formatCurrency(bid.amount)}
+                                </span>
+                                <Badge className={getBidStatusBadgeColor(bid.status)}>
+                                  {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                                </Badge>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Est. {bid.estimatedTime}
+                              </div>
                             </div>
                           </div>
                           
-                          <p className="text-neutral-700 mb-3">{bid.description}</p>
+                          <div className="bg-neutral-50 rounded-md p-3 mb-4">
+                            <p className="text-sm font-medium text-neutral-700 mb-1">Proposal:</p>
+                            <p className="text-neutral-700">{bid.description}</p>
+                          </div>
                           
-                          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-neutral-500">
+                          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground mb-4">
                             <span className="flex items-center">
                               <Clock className="mr-1 h-4 w-4" />
-                              Est. time: {bid.estimatedTime}
+                              Estimated completion: {bid.estimatedTime}
                             </span>
                             <span className="flex items-center">
                               <Calendar className="mr-1 h-4 w-4" />
-                              Bid placed: {formatDate(bid.createdAt)}
+                              Bid submitted: {formatDate(bid.createdAt)}
                             </span>
+                            {bid.mechanicProfile?.isMobile && (
+                              <span className="flex items-center text-green-600">
+                                <Car className="mr-1 h-4 w-4" />
+                                Mobile service available
+                              </span>
+                            )}
                           </div>
                           
+                          {/* Action buttons for job owner */}
                           {isJobOwner && job.status === 'open' && bid.status === 'pending' && (
-                            <div className="mt-4 flex justify-end">
+                            <div className="flex gap-3 justify-end">
                               <Button 
-                                className="bg-green-600 hover:bg-green-700"
+                                variant="outline"
+                                onClick={() => navigate(`/messages?conversation=${bid.mechanicId}&jobId=${job.id}`)}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Message First
+                              </Button>
+                              <Button 
+                                className="bg-green-600 hover:bg-green-700 text-white px-6"
                                 onClick={() => handleAcceptBid(bid.id)}
                               >
                                 <CheckCircle className="mr-2 h-4 w-4" />
-                                Accept Bid
+                                Accept This Bid
                               </Button>
                             </div>
                           )}
                           
+                          {/* Message button for accepted bid */}
                           {isJobOwner && job.status === 'in_progress' && bid.status === 'accepted' && (
-                            <div className="mt-4 flex justify-end">
+                            <div className="flex justify-between items-center bg-green-100 rounded-md p-3">
+                              <div className="text-green-800 font-medium">
+                                ✓ This bid has been accepted
+                              </div>
                               <Button 
-                                variant="outline"
+                                className="bg-green-600 hover:bg-green-700 text-white"
                                 onClick={() => navigate(`/messages?conversation=${bid.mechanicId}&jobId=${job.id}`)}
                               >
                                 <MessageSquare className="mr-2 h-4 w-4" />
@@ -316,12 +388,20 @@ const JobDetails = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 bg-neutral-50 rounded-md">
-                      <Clock className="mx-auto h-12 w-12 text-neutral-400" />
-                      <h3 className="mt-4 text-lg font-medium">No bids yet</h3>
-                      <p className="mt-2 text-neutral-500">
-                        This job hasn't received any bids from mechanics yet.
+                    <div className="text-center py-12 bg-neutral-50 rounded-md">
+                      <Clock className="mx-auto h-16 w-16 text-neutral-400 mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No bids received yet</h3>
+                      <p className="text-muted-foreground mb-4">
+                        {isJobOwner 
+                          ? "Your job is live and mechanics can see it. Bids will appear here as they come in."
+                          : "This job hasn't received any bids from mechanics yet."
+                        }
                       </p>
+                      {isJobOwner && (
+                        <div className="text-sm text-muted-foreground">
+                          <p>💡 Tip: Jobs with detailed descriptions and photos typically receive more bids</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -437,26 +517,87 @@ const JobDetails = () => {
 
       {/* Accept Bid Dialog */}
       <Dialog open={isAcceptBidDialogOpen} onOpenChange={setIsAcceptBidDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Accept Bid</DialogTitle>
+            <DialogTitle className="text-xl">Confirm Bid Acceptance</DialogTitle>
             <DialogDescription>
-              Are you sure you want to accept this bid? This will assign the mechanic to your job and notify them.
-              Other bids will be automatically rejected.
+              You're about to accept this bid and assign the mechanic to your job.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          
+          {selectedBidId && (
+            <div className="py-4">
+              {(() => {
+                const selectedBid = job?.bids?.find((bid: any) => bid.id === selectedBidId);
+                if (!selectedBid) return null;
+                
+                return (
+                  <div className="bg-neutral-50 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center">
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarImage src={selectedBid.mechanic?.profilePicture} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                          {selectedBid.mechanic ? selectedBid.mechanic.firstName.charAt(0) + selectedBid.mechanic.lastName.charAt(0) : 'M'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h4 className="font-semibold">
+                          {selectedBid.mechanic 
+                            ? getFullName(selectedBid.mechanic.firstName, selectedBid.mechanic.lastName) 
+                            : 'Mechanic'}
+                        </h4>
+                        {selectedBid.mechanicProfile && (
+                          <div className="flex items-center">
+                            <Rating 
+                              value={selectedBid.mechanicProfile.rating} 
+                              count={selectedBid.mechanicProfile.reviewCount}
+                              size="sm"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium text-muted-foreground">Price:</span>
+                        <p className="font-bold text-lg text-primary">{formatCurrency(selectedBid.amount)}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-muted-foreground">Time:</span>
+                        <p className="font-medium">{selectedBid.estimatedTime}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-2">What happens next:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• The mechanic will be notified of your acceptance</li>
+                  <li>• Other bids will be automatically rejected</li>
+                  <li>• Your job status will change to "In Progress"</li>
+                  <li>• You can message the mechanic to coordinate details</li>
+                </ul>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="gap-3">
             <Button 
               variant="outline" 
               onClick={() => setIsAcceptBidDialogOpen(false)}
+              className="flex-1"
             >
               Cancel
             </Button>
             <Button 
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 text-white flex-1"
               onClick={confirmAcceptBid}
+              disabled={acceptBidMutation.isPending}
             >
-              Accept Bid
+              {acceptBidMutation.isPending ? "Accepting..." : "Accept Bid"}
             </Button>
           </DialogFooter>
         </DialogContent>

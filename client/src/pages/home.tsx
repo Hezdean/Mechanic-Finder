@@ -26,9 +26,12 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   
   // Fetch mechanics for the "Choose Your Mechanic" section
-  const { data: mechanics = [], isLoading } = useQuery({
+  const { data: mechanicsData = [], isLoading } = useQuery({
     queryKey: ['/api/mechanic-profiles'],
   });
+
+  // Type the mechanics data properly
+  const mechanics = mechanicsData as any[];
 
   // Filter mechanics based on search
   const filteredMechanics = mechanics.filter((mechanic: any) => 
