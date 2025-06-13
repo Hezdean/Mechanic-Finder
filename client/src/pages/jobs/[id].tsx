@@ -47,8 +47,8 @@ import Rating from "@/components/ui/rating";
 
 const JobDetails = () => {
   const { user, isAuthenticated } = useAuth();
-  const [, params] = useLocation();
-  const jobId = parseInt(params.id);
+  const [location] = useLocation();
+  const jobId = parseInt(location.split('/').pop() || '0');
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [isAcceptBidDialogOpen, setIsAcceptBidDialogOpen] = useState(false);

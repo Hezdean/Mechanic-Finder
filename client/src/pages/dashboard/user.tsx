@@ -47,8 +47,11 @@ const UserDashboard = () => {
     queryKey: [`/api/jobs?userId=${user.id}`],
   });
 
+  // Type the jobs data properly
+  const jobsArray = (myJobs as any[]) || [];
+  
   // Completed jobs for reviews
-  const completedJobs = myJobs?.filter((job: any) => job.status === 'completed') || [];
+  const completedJobs = jobsArray.filter((job: any) => job.status === 'completed');
 
   return (
     <>
@@ -72,7 +75,7 @@ const UserDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {myJobs?.filter((job: any) => job.status !== 'completed' && job.status !== 'canceled').length || 0}
+                {jobsArray.filter((job: any) => job.status !== 'completed' && job.status !== 'canceled').length}
               </div>
               <p className="text-xs text-muted-foreground">
                 Jobs currently in progress or awaiting bids
@@ -87,7 +90,7 @@ const UserDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {myJobs?.filter((job: any) => job.status === 'completed').length || 0}
+                {jobsArray.filter((job: any) => job.status === 'completed').length}
               </div>
               <p className="text-xs text-muted-foreground">
                 Successfully completed repair jobs
@@ -154,7 +157,7 @@ const UserDashboard = () => {
               <CardContent>
                 {isLoadingMyJobs ? (
                   <div className="text-center py-6">Loading your jobs...</div>
-                ) : myJobs?.filter((job: any) => job.status !== 'completed' && job.status !== 'canceled').length ? (
+                ) : jobsArray.filter((job: any) => job.status !== 'completed' && job.status !== 'canceled').length ? (
                   <div className="rounded-md border">
                     <Table>
                       <TableHeader>
@@ -168,7 +171,7 @@ const UserDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {myJobs
+                        {jobsArray
                           .filter((job: any) => job.status !== 'completed' && job.status !== 'canceled')
                           .map((job: any) => (
                             <TableRow key={job.id}>
@@ -246,7 +249,7 @@ const UserDashboard = () => {
               <CardContent>
                 {isLoadingMyJobs ? (
                   <div className="text-center py-6">Loading completed jobs...</div>
-                ) : myJobs?.filter((job: any) => job.status === 'completed').length ? (
+                ) : jobsArray.filter((job: any) => job.status === 'completed').length ? (
                   <div className="rounded-md border">
                     <Table>
                       <TableHeader>
