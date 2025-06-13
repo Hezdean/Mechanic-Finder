@@ -514,7 +514,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Cannot accept bid for a job that is not open" });
       }
       
+      // Accept the bid and update job status
       const acceptedBid = await storage.acceptBid(bidId);
+      
+      // Update job status to 'in_progress' and assign mechanic
+      await storage.updateJob(job.id, {
+        status: 'in_progress',
+        assignedMechanicId: bid.mechanicId
+      });
+      
+      // Create notification message for the mechanic
+      const jobOwner = await storage.getUser(job.userId);
+      const notificationMessage = await storage.createMessage({
+        senderId: job.userId,
+        receiverId: bid.mechanicId,
+        jobId: job.id,
+        content: `Great news! Your bid for "${job.title}" has been accepted by ${jobOwner?.firstName} ${jobOwner?.lastName}. The job is now assigned to you. Please contact the customer to coordinate the repair work.`
+      });
+      
+      // Reject all other bids for this job
+      const allBids = await storage.listBidsByJobId(job.id);
+      await Promise.all(
+        allBids
+          .filter(b => b.id !== bidId && b.status === 'pending')
+          .map(b => storage.updateBid(b.id, { status: 'rejected' }))
+      );
+      
       res.json(acceptedBid);
     } catch (error) {
       res.status(500).json({ message: "Error accepting bid", error });
@@ -577,6 +602,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get unread messages/notifications for current user
+  app.get('/api/messages/unread', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const messages = await storage.listMessagesByUserId(userId);
+      const unreadMessages = messages.filter(msg => !msg.isRead && msg.receiverId === userId);
+      
+      // Get sender data for each message
+      const messagesWithSenderData = await Promise.all(
+        unreadMessages.map(async (message) => {
+          const sender = await storage.getUser(message.senderId);
+          const job = message.jobId ? await storage.getJob(message.jobId) : null;
+          return { ...message, sender, job };
+        })
+      );
+      
+      res.json(messagesWithSenderData);
+    } catch (error) {
+      res.status(500).json({ message: "Error retrieving unread messages", error });
+    }
+  });
+
+  // Mark message as read
+  app.put('/api/messages/:id/read', isAuthenticated, async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const message = await storage.getMessage(messageId);
+      
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      // Only allow the receiver to mark as read
+      if (message.receiverId !== (req.user as any).id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const updatedMessage = await storage.markMessageAsRead(messageId);
+      res.json(updatedMessage);
+    } catch (error) {
+      res.status(500).json({ message: "Error marking message as read", error });
+    }
+  });
+
   // Message routes
   app.post('/api/messages', isAuthenticated, validateRequest(messageInsertSchema), async (req, res) => {
     try {

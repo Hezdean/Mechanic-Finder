@@ -117,6 +117,12 @@ const MechanicDashboard = () => {
     select: (data) => data?.filter((job: any) => job.status === 'open')
   });
 
+  // Notifications query for bid acceptances
+  const { data: notifications, isLoading: isLoadingNotifications } = useQuery({
+    queryKey: ['/api/messages/unread'],
+    refetchInterval: 30000, // Poll every 30 seconds for new notifications
+  });
+
   // My bids query
   const { data: myBids, isLoading: isLoadingMyBids } = useQuery({
     queryKey: [`/api/mechanic-profiles/user/${user.id}`, user.id],
@@ -592,6 +598,59 @@ const MechanicDashboard = () => {
               >
                 Retry
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Notifications Section for Bid Acceptances */}
+        {profile && notifications && notifications.length > 0 && (
+          <Card className="mb-8 border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="flex items-center text-green-800">
+                <CheckCircle className="mr-2 h-5 w-5" />
+                Congratulations! You Have New Job Assignments
+              </CardTitle>
+              <CardDescription className="text-green-700">
+                Your bids have been accepted. Contact your customers to coordinate the repair work.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {notifications.map((notification: any) => (
+                  <div key={notification.id} className="bg-white rounded-lg p-4 border border-green-200">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold text-green-900">
+                          Job: {notification.job?.title}
+                        </h4>
+                        <p className="text-sm text-green-700">
+                          From: {notification.sender?.firstName} {notification.sender?.lastName}
+                        </p>
+                      </div>
+                      <Badge className="bg-green-600 text-white">
+                        Bid Accepted
+                      </Badge>
+                    </div>
+                    <p className="text-green-800 mb-3">{notification.content}</p>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => navigate(`/jobs/${notification.job?.id}`)}
+                      >
+                        View Job Details
+                      </Button>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate(`/messages?conversation=${notification.senderId}&jobId=${notification.jobId}`)}
+                      >
+                        Contact Customer
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}
