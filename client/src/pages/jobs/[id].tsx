@@ -67,7 +67,7 @@ const JobDetails = () => {
 
   // Accept bid mutation
   const acceptBidMutation = useMutation({
-    mutationFn: (bidId: number) => apiRequest('PUT', `/api/bids/${bidId}/accept`),
+    mutationFn: (bidId: number) => apiRequest(`/api/bids/${bidId}/accept`, 'PUT'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/jobs/${jobId}`] });
       toast({
