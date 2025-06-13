@@ -262,7 +262,7 @@ const UserDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {myJobs
+                        {jobsArray
                           .filter((job: any) => job.status === 'completed')
                           .map((job: any) => (
                             <TableRow key={job.id}>
