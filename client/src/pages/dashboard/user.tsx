@@ -180,15 +180,25 @@ const UserDashboard = () => {
                                   {job.status.replace('_', ' ')}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{job.bidCount || 0}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{job.bidCount || 0}</span>
+                                  {job.bidCount > 0 && job.status === 'open' && (
+                                    <Badge className="bg-accent text-white text-xs">
+                                      New
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
                               <TableCell>
                                 <div className="flex gap-2">
                                   <Button 
                                     size="sm" 
-                                    variant="outline"
+                                    variant={job.bidCount > 0 && job.status === 'open' ? "default" : "outline"}
                                     onClick={() => navigate(`/jobs/${job.id}`)}
+                                    className={job.bidCount > 0 && job.status === 'open' ? "bg-accent hover:bg-accent/90" : ""}
                                   >
-                                    View
+                                    {job.bidCount > 0 && job.status === 'open' ? 'Review Bids' : 'View'}
                                   </Button>
                                   {job.status === 'in_progress' && (
                                     <Button 

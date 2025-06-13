@@ -325,13 +325,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Job not found" });
       }
       
-      // Get bids for the job
+      // Get bids for the job with mechanic data
       const bids = await storage.listBidsByJobId(job.id);
+      
+      // Get mechanic data for each bid
+      const bidsWithMechanicData = await Promise.all(
+        bids.map(async (bid) => {
+          const mechanic = await storage.getUser(bid.mechanicId);
+          const mechanicProfile = await storage.getMechanicProfileByUserId(bid.mechanicId);
+          return { ...bid, mechanic, mechanicProfile };
+        })
+      );
       
       // Get user data for job owner
       const user = await storage.getUser(job.userId);
       
-      res.json({ ...job, user, bids });
+      res.json({ ...job, user, bids: bidsWithMechanicData });
     } catch (error) {
       res.status(500).json({ message: "Error retrieving job", error });
     }
