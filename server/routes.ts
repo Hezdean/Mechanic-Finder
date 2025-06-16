@@ -1,7 +1,6 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import session from "express-session";
 import { z } from "zod";
 import { 
   userInsertSchema, 
@@ -11,10 +10,8 @@ import {
   reviewInsertSchema,
   messageInsertSchema
 } from "@shared/schema";
-import MemoryStore from "memorystore";
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcrypt";
+import { generateToken, verifyToken, refreshToken, type JwtPayload } from "./jwt";
 
 const validateRequest = (schema: z.ZodType<any>) => (req: Request, res: Response, next: Function) => {
   try {
@@ -25,111 +22,128 @@ const validateRequest = (schema: z.ZodType<any>) => (req: Request, res: Response
   }
 };
 
-// Authentication middleware
-const isAuthenticated = (req: Request, res: Response, next: Function) => {
-  if (req.isAuthenticated()) {
-    return next();
+// Extend Request interface to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtPayload;
+    }
   }
-  res.status(401).json({ message: "Unauthorized" });
+}
+
+// JWT Authentication middleware
+const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (!token) {
+    return res.status(401).json({ message: "Access token required" });
+  }
+
+  const payload = verifyToken(token);
+  if (!payload) {
+    return res.status(403).json({ message: "Invalid or expired token" });
+  }
+
+  req.user = payload;
+  next();
 };
 
 // Role-based authorization middleware
-const hasRole = (role: string) => (req: Request, res: Response, next: Function) => {
-  if (req.isAuthenticated() && req.user && (req.user as any).role === role) {
+const hasRole = (role: string) => (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.role === role) {
     return next();
   }
-  res.status(403).json({ message: "Forbidden" });
+  res.status(403).json({ message: "Forbidden: Insufficient permissions" });
 };
 
 // Any role from allowed list
-const hasAnyRole = (roles: string[]) => (req: Request, res: Response, next: Function) => {
-  if (req.isAuthenticated() && req.user && roles.includes((req.user as any).role)) {
+const hasAnyRole = (roles: string[]) => (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && roles.includes(req.user.role)) {
     return next();
   }
-  res.status(403).json({ message: "Forbidden" });
+  res.status(403).json({ message: "Forbidden: Insufficient permissions" });
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
-  // Session setup
-  const SessionStore = MemoryStore(session);
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'sameshit-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    },
-    store: new SessionStore({
-      checkPeriod: 86400000 // prune expired entries every 24h
-    })
-  }));
-  
-  // Passport setup
-  app.use(passport.initialize());
-  app.use(passport.session());
-  
-  passport.use(new LocalStrategy(async (username, password, done) => {
+  // Auth routes with JWT
+  app.post('/api/auth/login', async (req, res) => {
     try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+
       const user = await storage.getUserByUsername(username);
-      
       if (!user) {
-        return done(null, false, { message: 'Incorrect username' });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
-      
-      // Use bcrypt to compare the provided password with the hashed password
+
+      // Verify password with bcrypt
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      
       if (!isPasswordValid) {
-        return done(null, false, { message: 'Incorrect password' });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      // Generate JWT token
+      const token = generateToken(user);
       
-      return done(null, user);
-    } catch (err) {
-      return done(err);
+      // Return user info (without password) and token
+      const { password: _, ...userResponse } = user;
+      res.json({
+        user: userResponse,
+        token,
+        expiresIn: "7d"
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed", error });
     }
-  }));
-  
-  passport.serializeUser((user: any, done) => {
-    done(null, user.id);
-  });
-  
-  passport.deserializeUser(async (id: number, done) => {
-    try {
-      const user = await storage.getUser(id);
-      done(null, user);
-    } catch (err) {
-      done(err);
-    }
-  });
-  
-  // Auth routes
-  app.post('/api/auth/login', passport.authenticate('local'), (req, res) => {
-    res.json(req.user);
   });
   
   app.post('/api/auth/logout', (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Error logging out" });
-      }
-      res.json({ message: "Logged out successfully" });
-    });
+    // For JWT, logout is handled client-side by removing the token
+    // Optionally implement token blacklisting here for enhanced security
+    res.json({ message: "Logged out successfully" });
   });
   
-  app.get('/api/auth/me', (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Not authenticated" });
+  app.get('/api/auth/me', authenticateToken, async (req, res) => {
+    try {
+      // Get fresh user data from storage
+      const user = await storage.getUser(req.user!.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from response for security
+      const { password, ...userResponse } = user;
+      res.json(userResponse);
+    } catch (error) {
+      res.status(500).json({ message: "Error retrieving user data", error });
     }
-    // Remove password from response for security
-    const { password, ...userResponse } = req.user as any;
-    res.json(userResponse);
+  });
+
+  // Token refresh endpoint
+  app.post('/api/auth/refresh', authenticateToken, (req, res) => {
+    try {
+      const newToken = refreshToken(req.headers['authorization']?.split(' ')[1] || '');
+      if (!newToken) {
+        return res.status(401).json({ message: "Cannot refresh token" });
+      }
+      
+      res.json({
+        token: newToken,
+        expiresIn: "7d"
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error refreshing token", error });
+    }
   });
 
   // Change password endpoint
-  app.post('/api/auth/change-password', isAuthenticated, async (req, res) => {
+  app.post('/api/auth/change-password', authenticateToken, async (req, res) => {
     try {
       const { currentPassword, newPassword } = req.body;
       
@@ -137,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Current password and new password are required" });
       }
 
-      const user = await storage.getUser((req.user as any).id);
+      const user = await storage.getUser(req.user!.userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -195,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/users/:id', isAuthenticated, async (req, res) => {
+  app.get('/api/users/:id', authenticateToken, async (req, res) => {
     try {
       const user = await storage.getUser(parseInt(req.params.id));
       if (!user) {
@@ -207,12 +221,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/users/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/users/:id', authenticateToken, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       
       // Users can only update their own profile unless they're an admin
-      if (userId !== (req.user as any).id && (req.user as any).role !== 'admin') {
+      if (userId !== req.user!.userId && req.user!.role !== 'admin') {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -236,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Mechanic profile routes
-  app.post('/api/mechanic-profiles', isAuthenticated, validateRequest(mechanicProfileInsertSchema), async (req, res) => {
+  app.post('/api/mechanic-profiles', authenticateToken, validateRequest(mechanicProfileInsertSchema), async (req, res) => {
     try {
       // Check if user already has a mechanic profile
       const existingProfile = await storage.getMechanicProfileByUserId((req.user as any).id);
@@ -284,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/mechanic-profiles/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/mechanic-profiles/:id', authenticateToken, async (req, res) => {
     try {
       const profileId = parseInt(req.params.id);
       const profile = await storage.getMechanicProfile(profileId);
@@ -306,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // PATCH route for partial updates to mechanic profiles
-  app.patch('/api/mechanic-profiles/:id', isAuthenticated, async (req, res) => {
+  app.patch('/api/mechanic-profiles/:id', authenticateToken, async (req, res) => {
     try {
       const profileId = parseInt(req.params.id);
       const profile = await storage.getMechanicProfile(profileId);
@@ -359,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Job routes
-  app.post('/api/jobs', isAuthenticated, validateRequest(jobInsertSchema), async (req, res) => {
+  app.post('/api/jobs', authenticateToken, validateRequest(jobInsertSchema), async (req, res) => {
     try {
       // Only allow current user to create their own job
       if (req.body.userId !== (req.user as any).id) {
@@ -401,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/jobs/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/jobs/:id', authenticateToken, async (req, res) => {
     try {
       const jobId = parseInt(req.params.id);
       const job = await storage.getJob(jobId);
@@ -452,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Bid routes
   // Get all bids for the current mechanic
-  app.get('/api/mechanic/bids', isAuthenticated, hasRole('mechanic'), async (req, res) => {
+  app.get('/api/mechanic/bids', authenticateToken, hasRole('mechanic'), async (req, res) => {
     try {
       const mechanicId = (req.user as any).id;
       const bids = await storage.listBidsByMechanicId(mechanicId);
@@ -462,7 +476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/bids', isAuthenticated, hasRole('mechanic'), validateRequest(bidInsertSchema), async (req, res) => {
+  app.post('/api/bids', authenticateToken, hasRole('mechanic'), validateRequest(bidInsertSchema), async (req, res) => {
     try {
       // Check if job exists
       const job = await storage.getJob(req.body.jobId);
@@ -488,7 +502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/bids/:id', isAuthenticated, async (req, res) => {
+  app.get('/api/bids/:id', authenticateToken, async (req, res) => {
     try {
       const bid = await storage.getBid(parseInt(req.params.id));
       if (!bid) {
@@ -511,7 +525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/jobs/:jobId/bids', isAuthenticated, async (req, res) => {
+  app.get('/api/jobs/:jobId/bids', authenticateToken, async (req, res) => {
     try {
       const jobId = parseInt(req.params.jobId);
       const job = await storage.getJob(jobId);
@@ -544,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/bids/:id/accept', isAuthenticated, async (req, res) => {
+  app.put('/api/bids/:id/accept', authenticateToken, async (req, res) => {
     try {
       const bidId = parseInt(req.params.id);
       const bid = await storage.getBid(bidId);
@@ -602,7 +616,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Review routes
-  app.post('/api/reviews', isAuthenticated, validateRequest(reviewInsertSchema), async (req, res) => {
+  app.post('/api/reviews', authenticateToken, validateRequest(reviewInsertSchema), async (req, res) => {
     try {
       const job = await storage.getJob(req.body.jobId);
       
@@ -658,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get unread messages/notifications for current user
-  app.get('/api/messages/unread', isAuthenticated, async (req, res) => {
+  app.get('/api/messages/unread', authenticateToken, async (req, res) => {
     try {
       const userId = (req.user as any).id;
       const messages = await storage.listMessagesByUserId(userId);
@@ -680,7 +694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark message as read
-  app.put('/api/messages/:id/read', isAuthenticated, async (req, res) => {
+  app.put('/api/messages/:id/read', authenticateToken, async (req, res) => {
     try {
       const messageId = parseInt(req.params.id);
       const message = await storage.getMessage(messageId);
@@ -702,7 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
-  app.post('/api/messages', isAuthenticated, validateRequest(messageInsertSchema), async (req, res) => {
+  app.post('/api/messages', authenticateToken, validateRequest(messageInsertSchema), async (req, res) => {
     try {
       // Only allow current user to send messages as themselves
       if (req.body.senderId !== (req.user as any).id) {
@@ -733,7 +747,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/messages', isAuthenticated, async (req, res) => {
+  app.get('/api/messages', authenticateToken, async (req, res) => {
     try {
       let messages;
       
@@ -783,7 +797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/messages/:id/read', isAuthenticated, async (req, res) => {
+  app.put('/api/messages/:id/read', authenticateToken, async (req, res) => {
     try {
       const messageId = parseInt(req.params.id);
       const message = await storage.getMessage(messageId);
