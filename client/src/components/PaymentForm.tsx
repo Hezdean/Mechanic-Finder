@@ -53,6 +53,8 @@ export function PaymentForm({ jobId, bidAmount, mechanicName, onSuccess }: Payme
       });
     },
     onSuccess: async (transactionData) => {
+      setLastTransactionData(transactionData);
+      
       toast({
         title: "Payment Initiated",
         description: "Your payment has been processed successfully. Generating receipt...",
@@ -60,7 +62,8 @@ export function PaymentForm({ jobId, bidAmount, mechanicName, onSuccess }: Payme
       
       // Fetch job details with user and mechanic information for the invoice
       try {
-        const jobData = await apiRequest(`/api/jobs/${jobId}`, "GET");
+        const response = await fetch(`/api/jobs/${jobId}`);
+        const jobData = await response.json();
         const acceptedBid = jobData.bids?.find((bid: any) => bid.status === 'accepted');
         
         if (acceptedBid && acceptedBid.mechanic) {
@@ -100,6 +103,45 @@ export function PaymentForm({ jobId, bidAmount, mechanicName, onSuccess }: Payme
       await createPaymentMutation.mutateAsync(data);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDownloadReceipt = async () => {
+    if (!lastTransactionData) {
+      toast({
+        title: "No Receipt Available",
+        description: "Complete a payment first to generate a receipt.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/jobs/${jobId}`);
+      const jobData = await response.json();
+      const acceptedBid = jobData.bids?.find((bid: any) => bid.status === 'accepted');
+      
+      if (acceptedBid && acceptedBid.mechanic) {
+        generateTransactionReceipt(lastTransactionData, jobData, acceptedBid.mechanic);
+        
+        toast({
+          title: "Receipt Downloaded",
+          description: "Your payment receipt has been downloaded successfully.",
+        });
+      } else {
+        toast({
+          title: "Download Failed",
+          description: "Unable to find job details for receipt generation.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to download receipt:", error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to download receipt. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
