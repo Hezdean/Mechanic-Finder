@@ -88,6 +88,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login successful",
         description: `Welcome back, ${data.user.firstName}!`,
       });
+      
+      // Redirect based on user role
+      if (data.user.role === 'mechanic') {
+        navigate('/dashboard/mechanic');
+      } else if (data.user.role === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
+        navigate('/');
+      }
     },
     onError: (error) => {
       toast({
