@@ -54,21 +54,27 @@ const Header = () => {
                   Home
                 </a>
               </Link>
-              <Link href="/mechanics">
-                <a className={`${location.startsWith("/mechanics") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                  Find Mechanics
-                </a>
-              </Link>
-              <Link href="/jobs">
-                <a className={`${location.startsWith("/jobs") && location !== "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                  Browse Jobs
-                </a>
-              </Link>
-              <Link href="/jobs/post">
-                <a className={`${location === "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                  Post a Job
-                </a>
-              </Link>
+              {(!user || user.role === "user") && (
+                <Link href="/mechanics">
+                  <a className={`${location.startsWith("/mechanics") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
+                    Find Mechanics
+                  </a>
+                </Link>
+              )}
+              {user?.role === "mechanic" && (
+                <Link href="/jobs">
+                  <a className={`${location.startsWith("/jobs") && location !== "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
+                    Browse Jobs
+                  </a>
+                </Link>
+              )}
+              {(!user || user.role === "user") && (
+                <Link href="/jobs/post">
+                  <a className={`${location === "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
+                    Post a Job
+                  </a>
+                </Link>
+              )}
             </nav>
           </div>
           <div className="flex items-center">

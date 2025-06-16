@@ -58,42 +58,48 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 Home
               </a>
             </Link>
-            <Link href="/mechanics">
-              <a 
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  location.startsWith("/mechanics") 
-                    ? "text-primary bg-primary/10" 
-                    : "text-foreground hover:text-primary hover:bg-primary/5"
-                }`}
-                onClick={onClose}
-              >
-                Find Mechanics
-              </a>
-            </Link>
-            <Link href="/jobs">
-              <a 
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  location.startsWith("/jobs") && location !== "/jobs/post" 
-                    ? "text-primary bg-primary/10" 
-                    : "text-foreground hover:text-primary hover:bg-primary/5"
-                }`}
-                onClick={onClose}
-              >
-                Browse Jobs
-              </a>
-            </Link>
-            <Link href="/jobs/post">
-              <a 
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  location === "/jobs/post" 
-                    ? "text-primary bg-primary/10" 
-                    : "text-foreground hover:text-primary hover:bg-primary/5"
-                }`}
-                onClick={onClose}
-              >
-                Post a Job
-              </a>
-            </Link>
+            {(!user || user.role === "user") && (
+              <Link href="/mechanics">
+                <a 
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    location.startsWith("/mechanics") 
+                      ? "text-primary bg-primary/10" 
+                      : "text-foreground hover:text-primary hover:bg-primary/5"
+                  }`}
+                  onClick={onClose}
+                >
+                  Find Mechanics
+                </a>
+              </Link>
+            )}
+            {user?.role === "mechanic" && (
+              <Link href="/jobs">
+                <a 
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    location.startsWith("/jobs") && location !== "/jobs/post" 
+                      ? "text-primary bg-primary/10" 
+                      : "text-foreground hover:text-primary hover:bg-primary/5"
+                  }`}
+                  onClick={onClose}
+                >
+                  Browse Jobs
+                </a>
+              </Link>
+            )}
+            {(!user || user.role === "user") && (
+              <Link href="/jobs/post">
+                <a 
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    location === "/jobs/post" 
+                      ? "text-primary bg-primary/10" 
+                      : "text-foreground hover:text-primary hover:bg-primary/5"
+                  }`}
+                  onClick={onClose}
+                >
+                  Post a Job
+                </a>
+              </Link>
+            )}
           </div>
 
           <div className="pt-4 pb-3 border-t border-primary/10">
