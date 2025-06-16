@@ -4,7 +4,8 @@ import {
   jobs, type Job, type JobInsert,
   bids, type Bid, type BidInsert,
   reviews, type Review, type ReviewInsert,
-  messages, type Message, type MessageInsert
+  messages, type Message, type MessageInsert,
+  transactions, type Transaction, type TransactionInsert
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or } from "drizzle-orm";
@@ -56,6 +57,14 @@ export interface IStorage {
   listMessagesByUserId(userId: number): Promise<Message[]>;
   listMessagesByConversation(userId1: number, userId2: number): Promise<Message[]>;
   listMessagesByJobId(jobId: number): Promise<Message[]>;
+  
+  // Transaction methods
+  getTransaction(id: number): Promise<Transaction | undefined>;
+  createTransaction(transaction: TransactionInsert): Promise<Transaction>;
+  updateTransaction(id: number, transaction: Partial<Transaction>): Promise<Transaction | undefined>;
+  listTransactionsByJobId(jobId: number): Promise<Transaction[]>;
+  listTransactionsByUserId(userId: number): Promise<Transaction[]>;
+  listTransactionsByMechanicId(mechanicId: number): Promise<Transaction[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -65,6 +74,7 @@ export class MemStorage implements IStorage {
   private bids: Map<number, Bid>;
   private reviews: Map<number, Review>;
   private messages: Map<number, Message>;
+  private transactions: Map<number, Transaction>;
   private currentIds: {
     users: number;
     mechanicProfiles: number;
@@ -72,6 +82,7 @@ export class MemStorage implements IStorage {
     bids: number;
     reviews: number;
     messages: number;
+    transactions: number;
   };
 
   constructor() {
@@ -81,6 +92,7 @@ export class MemStorage implements IStorage {
     this.bids = new Map();
     this.reviews = new Map();
     this.messages = new Map();
+    this.transactions = new Map();
     this.currentIds = {
       users: 1,
       mechanicProfiles: 1,
@@ -88,6 +100,7 @@ export class MemStorage implements IStorage {
       bids: 1,
       reviews: 1,
       messages: 1,
+      transactions: 1,
     };
 
     // Initialize data asynchronously
@@ -561,6 +574,49 @@ export class MemStorage implements IStorage {
 
   async listMessagesByJobId(jobId: number): Promise<Message[]> {
     return [...this.messages.values()].filter(message => message.jobId === jobId);
+  }
+
+  // Transaction methods
+  async getTransaction(id: number): Promise<Transaction | undefined> {
+    return this.transactions.get(id);
+  }
+
+  async createTransaction(transaction: TransactionInsert): Promise<Transaction> {
+    const id = this.currentIds.transactions++;
+    const now = new Date();
+    const newTransaction: Transaction = { 
+      ...transaction, 
+      id, 
+      createdAt: now, 
+      updatedAt: now 
+    };
+    this.transactions.set(id, newTransaction);
+    return newTransaction;
+  }
+
+  async updateTransaction(id: number, transactionData: Partial<Transaction>): Promise<Transaction | undefined> {
+    const existingTransaction = this.transactions.get(id);
+    if (!existingTransaction) return undefined;
+    
+    const updatedTransaction = { 
+      ...existingTransaction, 
+      ...transactionData, 
+      updatedAt: new Date() 
+    };
+    this.transactions.set(id, updatedTransaction);
+    return updatedTransaction;
+  }
+
+  async listTransactionsByJobId(jobId: number): Promise<Transaction[]> {
+    return [...this.transactions.values()].filter(transaction => transaction.jobId === jobId);
+  }
+
+  async listTransactionsByUserId(userId: number): Promise<Transaction[]> {
+    return [...this.transactions.values()].filter(transaction => transaction.userId === userId);
+  }
+
+  async listTransactionsByMechanicId(mechanicId: number): Promise<Transaction[]> {
+    return [...this.transactions.values()].filter(transaction => transaction.mechanicId === mechanicId);
   }
 }
 

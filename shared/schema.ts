@@ -240,3 +240,44 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     references: [jobs.id],
   }),
 }));
+
+// Transaction model
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").notNull().references(() => jobs.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  mechanicId: integer("mechanic_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(), // Amount in cents
+  paymentMethod: text("payment_method").notNull(), // cash, mobile_money, bank_transfer, etc.
+  status: text("status").notNull().default("pending"), // pending, completed, failed
+  transactionReference: text("transaction_reference"), // For tracking
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const transactionInsertSchema = createInsertSchema(transactions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type TransactionInsert = z.infer<typeof transactionInsertSchema>;
+export type Transaction = typeof transactions.$inferSelect;
+
+// Transaction relations
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  job: one(jobs, {
+    fields: [transactions.jobId],
+    references: [jobs.id],
+  }),
+  user: one(users, {
+    fields: [transactions.userId],
+    references: [users.id],
+    relationName: "userTransactions",
+  }),
+  mechanic: one(users, {
+    fields: [transactions.mechanicId],
+    references: [users.id],
+    relationName: "mechanicTransactions",
+  }),
+}));
