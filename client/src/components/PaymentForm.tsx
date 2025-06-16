@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { CreditCard, Smartphone, Banknote } from "lucide-react";
+import { generateTransactionReceipt } from "@/lib/invoiceGenerator";
+import { CreditCard, Smartphone, Banknote, Download } from "lucide-react";
 
 const paymentFormSchema = z.object({
   amount: z.number().min(1, "Amount must be greater than 0"),
@@ -29,6 +30,7 @@ interface PaymentFormProps {
 
 export function PaymentForm({ jobId, bidAmount, mechanicName, onSuccess }: PaymentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastTransactionData, setLastTransactionData] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -50,11 +52,35 @@ export function PaymentForm({ jobId, bidAmount, mechanicName, onSuccess }: Payme
         transactionReference: data.transactionReference || null,
       });
     },
-    onSuccess: () => {
+    onSuccess: async (transactionData) => {
       toast({
         title: "Payment Initiated",
-        description: "Your payment has been processed successfully.",
+        description: "Your payment has been processed successfully. Generating receipt...",
       });
+      
+      // Fetch job details with user and mechanic information for the invoice
+      try {
+        const jobData = await apiRequest(`/api/jobs/${jobId}`, "GET");
+        const acceptedBid = jobData.bids?.find((bid: any) => bid.status === 'accepted');
+        
+        if (acceptedBid && acceptedBid.mechanic) {
+          // Generate and download PDF receipt
+          generateTransactionReceipt(transactionData, jobData, acceptedBid.mechanic);
+          
+          toast({
+            title: "Receipt Downloaded",
+            description: "Your payment receipt has been downloaded automatically.",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to generate receipt:", error);
+        toast({
+          title: "Receipt Generation Failed",
+          description: "Payment successful, but receipt generation failed. You can request a receipt later.",
+          variant: "destructive",
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/jobs", jobId] });
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
       onSuccess?.();
@@ -173,13 +199,26 @@ export function PaymentForm({ jobId, bidAmount, mechanicName, onSuccess }: Payme
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting || createPaymentMutation.isPending}
-            >
-              {isSubmitting || createPaymentMutation.isPending ? "Processing..." : "Make Payment"}
-            </Button>
+            <div className="space-y-3">
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || createPaymentMutation.isPending}
+              >
+                {isSubmitting || createPaymentMutation.isPending ? "Processing..." : "Make Payment"}
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleDownloadReceipt}
+                disabled={!createPaymentMutation.isSuccess}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Receipt
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
