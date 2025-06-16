@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BidForm from "@/components/job/BidForm";
+import { PaymentForm } from "@/components/PaymentForm";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -54,6 +55,7 @@ const JobDetails = () => {
   const [isAcceptBidDialogOpen, setIsAcceptBidDialogOpen] = useState(false);
   const [selectedBidId, setSelectedBidId] = useState<number | null>(null);
   const [isBidFormOpen, setIsBidFormOpen] = useState(false);
+  const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
 
   // Fetch job details
   const {
@@ -369,19 +371,28 @@ const JobDetails = () => {
                             </div>
                           )}
                           
-                          {/* Message button for accepted bid */}
+                          {/* Message and Payment buttons for accepted bid */}
                           {isJobOwner && job.status === 'in_progress' && bid.status === 'accepted' && (
-                            <div className="flex justify-between items-center bg-green-100 rounded-md p-3">
-                              <div className="text-green-800 font-medium">
+                            <div className="bg-green-100 rounded-md p-3">
+                              <div className="text-green-800 font-medium mb-3">
                                 ✓ This bid has been accepted
                               </div>
-                              <Button 
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                                onClick={() => navigate(`/messages?conversation=${bid.mechanicId}&jobId=${job.id}`)}
-                              >
-                                <MessageSquare className="mr-2 h-4 w-4" />
-                                Message Mechanic
-                              </Button>
+                              <div className="flex gap-3 justify-end">
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => navigate(`/messages?conversation=${bid.mechanicId}&jobId=${job.id}`)}
+                                >
+                                  <MessageSquare className="mr-2 h-4 w-4" />
+                                  Message Mechanic
+                                </Button>
+                                <Button 
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  onClick={() => setIsPaymentFormOpen(true)}
+                                >
+                                  <DollarSign className="mr-2 h-4 w-4" />
+                                  Make Payment
+                                </Button>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -600,6 +611,34 @@ const JobDetails = () => {
               {acceptBidMutation.isPending ? "Accepting..." : "Accept Bid"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Form Dialog */}
+      <Dialog open={isPaymentFormOpen} onOpenChange={setIsPaymentFormOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Make Payment</DialogTitle>
+          </DialogHeader>
+          {(() => {
+            const acceptedBid = job?.bids?.find((bid: any) => bid.status === 'accepted');
+            if (!acceptedBid) return null;
+            
+            return (
+              <PaymentForm
+                jobId={jobId}
+                bidAmount={acceptedBid.amount}
+                mechanicName={acceptedBid.mechanic ? 
+                  getFullName(acceptedBid.mechanic.firstName, acceptedBid.mechanic.lastName) : 
+                  'Mechanic'
+                }
+                onSuccess={() => {
+                  setIsPaymentFormOpen(false);
+                  queryClient.invalidateQueries({ queryKey: [`/api/jobs/${jobId}`] });
+                }}
+              />
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </>

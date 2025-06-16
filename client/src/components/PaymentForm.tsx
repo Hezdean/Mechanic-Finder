@@ -43,16 +43,12 @@ export function PaymentForm({ jobId, bidAmount, mechanicName, onSuccess }: Payme
 
   const createPaymentMutation = useMutation({
     mutationFn: async (data: PaymentFormData) => {
-      const response = await apiRequest("/api/transactions", {
-        method: "POST",
-        body: JSON.stringify({
-          jobId,
-          amount: data.amount,
-          paymentMethod: data.paymentMethod,
-          transactionReference: data.transactionReference || null,
-        }),
+      return apiRequest("/api/transactions", "POST", {
+        jobId,
+        amount: data.amount,
+        paymentMethod: data.paymentMethod,
+        transactionReference: data.transactionReference || null,
       });
-      return response.json();
     },
     onSuccess: () => {
       toast({
