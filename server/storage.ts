@@ -125,6 +125,7 @@ export class MemStorage implements IStorage {
         bids: 1,
         reviews: 1,
         messages: 1,
+        transactions: 1,
       };
       
       // Create admin user with bcrypt-hashed password

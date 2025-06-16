@@ -21,6 +21,7 @@ import JobDetails from "@/pages/jobs/[id]";
 import Mechanics from "@/pages/mechanics/index";
 import MechanicProfile from "@/pages/mechanics/[id]";
 import Messages from "@/pages/messages/index";
+import TransactionHistory from "@/pages/transaction-history";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -45,6 +46,7 @@ function Router() {
         <Route path="/mechanics" component={Mechanics} />
         <Route path="/mechanics/:id" component={MechanicProfile} />
         <Route path="/messages" component={Messages} />
+        <Route path="/transactions" component={TransactionHistory} />
         <Route component={NotFound} />
       </Switch>
       <Footer />

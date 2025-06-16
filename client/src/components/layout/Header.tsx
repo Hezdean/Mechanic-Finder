@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MobileMenu from "./MobileMenu";
-import { Menu, User, LogOut, Settings, Drill, Car, MessageSquare } from "lucide-react";
+import { Menu, User, LogOut, Settings, Drill, Car, MessageSquare, Receipt } from "lucide-react";
 
 const Header = () => {
   const [location] = useLocation();
@@ -122,6 +122,14 @@ const Header = () => {
                         <a className="flex cursor-pointer items-center">
                           <MessageSquare className="mr-2 h-4 w-4" />
                           <span>Messages</span>
+                        </a>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/transactions">
+                        <a className="flex cursor-pointer items-center">
+                          <Receipt className="mr-2 h-4 w-4" />
+                          <span>Transaction History</span>
                         </a>
                       </Link>
                     </DropdownMenuItem>
