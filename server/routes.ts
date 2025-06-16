@@ -889,13 +889,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         transactions = await storage.listTransactionsByMechanicId(mechanicId);
       } else {
-        // Get user's transactions (as payer)
-        transactions = await storage.listTransactionsByUserId(req.user!.userId);
+        // Get user's transactions with role-based logic
+        if (req.user!.role === 'mechanic') {
+          transactions = await storage.listTransactionsByMechanicId(req.user!.userId);
+        } else {
+          transactions = await storage.listTransactionsByUserId(req.user!.userId);
+        }
       }
       
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ message: "Error retrieving transactions", error });
+    }
+  });
+
+  // Get mechanic earnings summary
+  app.get('/api/transactions/earnings', authenticateToken, async (req, res) => {
+    try {
+      if (req.user!.role !== 'mechanic') {
+        return res.status(403).json({ message: "Only mechanics can access earnings data" });
+      }
+
+      const transactions = await storage.listTransactionsByMechanicId(req.user!.userId);
+      
+      const totalEarnings = transactions.reduce((sum, t) => sum + t.amount, 0);
+      const completedJobs = transactions.length;
+      const averageJobValue = completedJobs > 0 ? Math.round(totalEarnings / completedJobs) : 0;
+
+      res.json({
+        totalEarnings,
+        completedJobs,
+        averageJobValue
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching earnings data", error });
     }
   });
 

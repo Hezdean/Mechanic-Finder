@@ -612,11 +612,55 @@ export class MemStorage implements IStorage {
   }
 
   async listTransactionsByUserId(userId: number): Promise<Transaction[]> {
-    return [...this.transactions.values()].filter(transaction => transaction.userId === userId);
+    const userTransactions = [...this.transactions.values()].filter(transaction => transaction.userId === userId);
+    
+    // Enhance with related data
+    return userTransactions.map(transaction => {
+      const job = this.jobs.get(transaction.jobId);
+      const mechanic = this.users.get(transaction.mechanicId);
+      
+      return {
+        ...transaction,
+        job: job ? {
+          title: job.title,
+          description: job.description,
+          vehicle: job.vehicle,
+          location: job.location,
+          status: job.status
+        } : undefined,
+        mechanic: mechanic ? {
+          firstName: mechanic.firstName,
+          lastName: mechanic.lastName,
+          username: mechanic.username
+        } : undefined
+      };
+    });
   }
 
   async listTransactionsByMechanicId(mechanicId: number): Promise<Transaction[]> {
-    return [...this.transactions.values()].filter(transaction => transaction.mechanicId === mechanicId);
+    const mechanicTransactions = [...this.transactions.values()].filter(transaction => transaction.mechanicId === mechanicId);
+    
+    // Enhance with related data
+    return mechanicTransactions.map(transaction => {
+      const job = this.jobs.get(transaction.jobId);
+      const user = this.users.get(transaction.userId);
+      
+      return {
+        ...transaction,
+        job: job ? {
+          title: job.title,
+          description: job.description,
+          vehicle: job.vehicle,
+          location: job.location,
+          status: job.status
+        } : undefined,
+        user: user ? {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username
+        } : undefined
+      };
+    });
   }
 }
 
