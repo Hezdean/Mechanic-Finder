@@ -74,8 +74,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   passport.use(new LocalStrategy(async (username, password, done) => {
     try {
       const user = await storage.getUserByUsername(username);
-      console.log('Login attempt for username:', username);
-      console.log('User found:', !!user);
       
       if (!user) {
         return done(null, false, { message: 'Incorrect username' });
@@ -83,7 +81,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Use bcrypt to compare the provided password with the hashed password
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Password validation:', isPasswordValid);
       
       if (!isPasswordValid) {
         return done(null, false, { message: 'Incorrect password' });
@@ -91,7 +88,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       return done(null, user);
     } catch (err) {
-      console.error('Authentication error:', err);
       return done(err);
     }
   }));
@@ -127,7 +123,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    res.json(req.user);
+    // Remove password from response for security
+    const { password, ...userResponse } = req.user as any;
+    res.json(userResponse);
+  });
+
+  // Change password endpoint
+  app.post('/api/auth/change-password', isAuthenticated, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+
+      const user = await storage.getUser((req.user as any).id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      // Hash new password
+      const saltRounds = 12;
+      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      // Update password
+      await storage.updateUser(user.id, { password: hashedNewPassword });
+      
+      res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error changing password", error });
+    }
   });
   
   // User routes

@@ -95,21 +95,32 @@ export class MemStorage implements IStorage {
   }
 
   private async initializeData() {
-    // Create admin user
-    await this.createUser({
-      username: "admin",
-      password: "adminpass",
-      email: "admin@sameshit.com",
-      firstName: "Admin",
-      lastName: "User",
-      role: "admin",
-    });
+    try {
+      console.log('Starting data initialization...');
+      
+      // Create admin user
+      const adminUser = await this.createUser({
+        username: "admin",
+        password: "adminpass",
+        email: "admin@sameshit.com",
+        firstName: "Admin",
+        lastName: "User",
+        role: "admin",
+      });
+      console.log('Admin user created with ID:', adminUser.id);
 
-    // Create some initial mechanics
-    await this.seedMechanics();
-    
-    // Create some initial jobs
-    await this.seedJobs();
+      // Create some initial mechanics
+      await this.seedMechanics();
+      console.log('Mechanics seeded');
+      
+      // Create some initial jobs
+      await this.seedJobs();
+      console.log('Jobs seeded');
+      
+      console.log('Data initialization complete');
+    } catch (error) {
+      console.error('Error during data initialization:', error);
+    }
   }
 
   // Seed some initial mechanics
@@ -825,4 +836,4 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
