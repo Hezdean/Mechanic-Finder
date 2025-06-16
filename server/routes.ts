@@ -14,6 +14,7 @@ import {
 import MemoryStore from "memorystore";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import bcrypt from "bcrypt";
 
 const validateRequest = (schema: z.ZodType<any>) => (req: Request, res: Response, next: Function) => {
   try {
@@ -76,9 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return done(null, false, { message: 'Incorrect username' });
       }
-      if (user.password !== password) { // In a real app, use bcrypt to compare
+      
+      // Use bcrypt to compare the provided password with the hashed password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
         return done(null, false, { message: 'Incorrect password' });
       }
+      
       return done(null, user);
     } catch (err) {
       return done(err);
@@ -133,8 +138,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already exists" });
       }
       
-      const user = await storage.createUser(req.body);
-      res.status(201).json(user);
+      // Hash the password before storing
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+      
+      // Create user with hashed password
+      const userData = {
+        ...req.body,
+        password: hashedPassword
+      };
+      
+      const user = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password, ...userResponse } = user;
+      res.status(201).json(userResponse);
     } catch (error) {
       res.status(500).json({ message: "Error creating user", error });
     }
