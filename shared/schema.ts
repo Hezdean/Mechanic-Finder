@@ -259,6 +259,9 @@ export const transactionInsertSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  userId: true,
+  mechanicId: true,
+  status: true,
 });
 
 export type TransactionInsert = z.infer<typeof transactionInsertSchema>;

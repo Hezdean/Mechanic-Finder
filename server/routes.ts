@@ -836,9 +836,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only job owner can make payment" });
       }
       
-      // Verify job is in accepted status
-      if (job.status !== 'accepted') {
-        return res.status(400).json({ message: "Job must be accepted before payment" });
+      // Verify job is in progress (has accepted bid)
+      if (job.status !== 'in_progress') {
+        return res.status(400).json({ message: "Job must have an accepted bid before payment" });
       }
       
       // Verify mechanic is assigned
