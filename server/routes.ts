@@ -253,13 +253,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/mechanic-profiles', authenticateToken, validateRequest(mechanicProfileInsertSchema), async (req, res) => {
     try {
       // Check if user already has a mechanic profile
-      const existingProfile = await storage.getMechanicProfileByUserId((req.user as any).id);
+      const existingProfile = await storage.getMechanicProfileByUserId(req.user!.userId);
       if (existingProfile) {
         return res.status(400).json({ message: "Mechanic profile already exists for this user" });
       }
       
       // Only allow current user to create their own profile
-      if (req.body.userId !== (req.user as any).id) {
+      if (req.body.userId !== req.user!.userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -308,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow the owner or admin to update the profile
-      if (profile.userId !== (req.user as any).id && (req.user as any).role !== 'admin') {
+      if (profile.userId !== req.user!.userId && (req.user as any).role !== 'admin') {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -330,7 +330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow the owner or admin to update the profile
-      if (profile.userId !== (req.user as any).id && (req.user as any).role !== 'admin') {
+      if (profile.userId !== req.user!.userId && (req.user as any).role !== 'admin') {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -376,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/jobs', authenticateToken, validateRequest(jobInsertSchema), async (req, res) => {
     try {
       // Only allow current user to create their own job
-      if (req.body.userId !== (req.user as any).id) {
+      if (req.body.userId !== req.user!.userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -425,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow the owner or admin to update the job
-      if (job.userId !== (req.user as any).id && (req.user as any).role !== 'admin') {
+      if (job.userId !== req.user!.userId && (req.user as any).role !== 'admin') {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -468,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all bids for the current mechanic
   app.get('/api/mechanic/bids', authenticateToken, hasRole('mechanic'), async (req, res) => {
     try {
-      const mechanicId = (req.user as any).id;
+      const mechanicId = req.user!.userId;
       const bids = await storage.listBidsByMechanicId(mechanicId);
       res.json(bids);
     } catch (error) {
@@ -485,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow current mechanic to create their own bid
-      if (req.body.mechanicId !== (req.user as any).id) {
+      if (req.body.mechanicId !== req.user!.userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -513,8 +513,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mechanic = await storage.getUser(bid.mechanicId);
       
       // Only allow job owner, bid owner, or admin to view bid details
-      if ((req.user as any).id !== job?.userId && 
-          (req.user as any).id !== bid.mechanicId &&
+      if (req.user!.userId !== job?.userId && 
+          req.user!.userId !== bid.mechanicId &&
           (req.user as any).role !== 'admin') {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -535,8 +535,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow job owner, assigned mechanic, or admin to view all bids
-      if ((req.user as any).id !== job.userId && 
-          (req.user as any).id !== job.assignedMechanicId &&
+      if (req.user!.userId !== job.userId && 
+          req.user!.userId !== job.assignedMechanicId &&
           (req.user as any).role !== 'admin') {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -574,7 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow job owner or admin to accept a bid
-      if ((req.user as any).id !== job.userId && (req.user as any).role !== 'admin') {
+      if (req.user!.userId !== job.userId && (req.user as any).role !== 'admin') {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -625,7 +625,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only job owner can leave a review and only for completed jobs
-      if ((req.user as any).id !== job.userId) {
+      if (req.user!.userId !== job.userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -674,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get unread messages/notifications for current user
   app.get('/api/messages/unread', authenticateToken, async (req, res) => {
     try {
-      const userId = (req.user as any).id;
+      const userId = req.user!.userId;
       const messages = await storage.listMessagesByUserId(userId);
       const unreadMessages = messages.filter(msg => !msg.isRead && msg.receiverId === userId);
       
@@ -704,7 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow the receiver to mark as read
-      if (message.receiverId !== (req.user as any).id) {
+      if (message.receiverId !== req.user!.userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -719,7 +719,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/messages', authenticateToken, validateRequest(messageInsertSchema), async (req, res) => {
     try {
       // Only allow current user to send messages as themselves
-      if (req.body.senderId !== (req.user as any).id) {
+      if (req.body.senderId !== req.user!.userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -760,7 +760,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Check if user is involved with the job
-        if ((req.user as any).id !== job.userId && (req.user as any).id !== job.assignedMechanicId) {
+        if (req.user!.userId !== job.userId && req.user!.userId !== job.assignedMechanicId) {
           return res.status(403).json({ message: "Forbidden" });
         }
         
@@ -769,17 +769,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userId = parseInt(req.query.userId as string);
         
         // Check if user is trying to access their own messages or if they are admin
-        if ((req.user as any).id !== userId && (req.user as any).role !== 'admin') {
+        if (req.user!.userId !== userId && (req.user as any).role !== 'admin') {
           return res.status(403).json({ message: "Forbidden" });
         }
         
         messages = await storage.listMessagesByUserId(userId);
       } else if (req.query.conversation) {
         const otherUserId = parseInt(req.query.conversation as string);
-        messages = await storage.listMessagesByConversation((req.user as any).id, otherUserId);
+        messages = await storage.listMessagesByConversation(req.user!.userId, otherUserId);
       } else {
         // Default to getting current user's messages
-        messages = await storage.listMessagesByUserId((req.user as any).id);
+        messages = await storage.listMessagesByUserId(req.user!.userId);
       }
       
       // Get user data for each message
@@ -807,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Only allow receiver to mark message as read
-      if (message.receiverId !== (req.user as any).id) {
+      if (message.receiverId !== req.user!.userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
       

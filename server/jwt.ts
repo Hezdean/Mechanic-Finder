@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import type { User } from "@shared/schema";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+const JWT_EXPIRES_IN = "7d";
 
 export interface JwtPayload {
   userId: number;
@@ -19,20 +19,12 @@ export function generateToken(user: User): string {
     email: user.email,
   };
 
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-    issuer: "mechanic-finder",
-    audience: "mechanic-finder-users",
-  });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
 export function verifyToken(token: string): JwtPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      issuer: "mechanic-finder",
-      audience: "mechanic-finder-users",
-    }) as JwtPayload;
-    
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     return decoded;
   } catch (error) {
     return null;
@@ -55,7 +47,5 @@ export function refreshToken(token: string): string | null {
 
   return jwt.sign(newPayload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
-    issuer: "mechanic-finder",
-    audience: "mechanic-finder-users",
   });
 }
