@@ -98,7 +98,23 @@ export class MemStorage implements IStorage {
     try {
       console.log('Starting data initialization...');
       
-      // Create admin user
+      // Clear existing data to ensure fresh start with proper password hashing
+      this.users.clear();
+      this.mechanicProfiles.clear();
+      this.jobs.clear();
+      this.bids.clear();
+      this.reviews.clear();
+      this.messages.clear();
+      this.currentIds = {
+        users: 1,
+        mechanicProfiles: 1,
+        jobs: 1,
+        bids: 1,
+        reviews: 1,
+        messages: 1,
+      };
+      
+      // Create admin user with bcrypt-hashed password
       const adminUser = await this.createUser({
         username: "admin",
         password: "adminpass",
