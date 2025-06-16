@@ -487,104 +487,7 @@ const MechanicDashboard = () => {
               </Button>
             </CardContent>
           </Card>
-        ) : profile ? (
-          // Profile overview when profile exists
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center">
-                  <UserCheck className="mr-2 h-5 w-5 text-primary-500" />
-                  Mechanic Profile
-                  {profile.isVerified ? (
-                    <Badge className="ml-3 bg-green-100 text-green-800">Verified</Badge>
-                  ) : (
-                    <Badge className="ml-3 bg-amber-100 text-amber-800">Pending Verification</Badge>
-                  )}
-                </CardTitle>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="flex items-center"
-                  onClick={() => setShowEditProfile(true)}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Edit Profile
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="font-medium text-lg mb-2">Your Specializations</h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {profile.specializations?.map((spec: string, index: number) => (
-                      <Badge key={index} variant="secondary">
-                        {spec}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <h3 className="font-medium text-lg mb-2">Services Offered</h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {profile.servicesOffered?.map((service: string, index: number) => (
-                      <Badge key={index} variant="outline">
-                        {service}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <h3 className="font-medium text-lg mb-2">Certifications</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.certifications?.length ? profile.certifications.map((cert: string, index: number) => (
-                      <Badge key={index} className="bg-blue-100 text-blue-800">
-                        {cert}
-                      </Badge>
-                    )) : (
-                      <span className="text-neutral-500">No certifications listed</span>
-                    )}
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">Rating</h3>
-                      <p>{profile.rating / 10} ({profile.reviewCount} reviews)</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">Mobile Service</h3>
-                      <p>{profile.isMobile ? "Yes" : "No"}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">Hourly Rate</h3>
-                      <p>{formatCurrency(profile.hourlyRate)}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">Experience</h3>
-                      <p>{profile.yearsOfExperience} years</p>
-                    </div>
-                  </div>
-                  
-                  {!profile.isVerified && (
-                    <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
-                      <h3 className="font-medium flex items-center">
-                        <AlertCircle className="mr-2 h-5 w-5 text-amber-500" />
-                        Pending Verification
-                      </h3>
-                      <p className="text-sm mt-2">
-                        Your profile is currently under review by our admin team. This usually takes 1-2 business days.
-                        You'll be able to bid on jobs once your profile is verified.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
+        ) : !profile && isProfileError ? (
           // Profile error state
           <Card className="mb-8 border-red-200">
             <CardHeader>
@@ -600,7 +503,7 @@ const MechanicDashboard = () => {
               </Button>
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
         {/* Notifications Section for Bid Acceptances */}
         {profile && notifications && notifications.length > 0 && (
@@ -658,10 +561,11 @@ const MechanicDashboard = () => {
         {/* Only show the tabs if the profile exists */}
         {profile && (
           <Tabs defaultValue="active-jobs" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger value="active-jobs">Active Jobs</TabsTrigger>
               <TabsTrigger value="my-bids">My Bids</TabsTrigger>
               <TabsTrigger value="available-jobs">Available Jobs</TabsTrigger>
+              <TabsTrigger value="mechanic-profile">Mechanic Profile</TabsTrigger>
             </TabsList>
             
             {/* Active Jobs Tab */}
@@ -890,6 +794,105 @@ const MechanicDashboard = () => {
                     Browse All Jobs
                   </Button>
                 </CardFooter>
+              </Card>
+            </TabsContent>
+            
+            {/* Mechanic Profile Tab */}
+            <TabsContent value="mechanic-profile">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center">
+                      <UserCheck className="mr-2 h-5 w-5 text-primary-500" />
+                      Mechanic Profile
+                      {profile.isVerified ? (
+                        <Badge className="ml-3 bg-green-100 text-green-800">Verified</Badge>
+                      ) : (
+                        <Badge className="ml-3 bg-amber-100 text-amber-800">Pending Verification</Badge>
+                      )}
+                    </CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center"
+                      onClick={() => setShowEditProfile(true)}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                      <h3 className="font-medium text-lg mb-2">Your Specializations</h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {profile.specializations?.map((spec: string, index: number) => (
+                          <Badge key={index} variant="secondary">
+                            {spec}
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <h3 className="font-medium text-lg mb-2">Services Offered</h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {profile.servicesOffered?.map((service: string, index: number) => (
+                          <Badge key={index} variant="outline">
+                            {service}
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <h3 className="font-medium text-lg mb-2">Certifications</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.certifications?.length ? profile.certifications.map((cert: string, index: number) => (
+                          <Badge key={index} className="bg-blue-100 text-blue-800">
+                            {cert}
+                          </Badge>
+                        )) : (
+                          <span className="text-neutral-500">No certifications listed</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-medium text-lg mb-2">Rating</h3>
+                          <p>{profile.rating / 10} ({profile.reviewCount} reviews)</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="font-medium text-lg mb-2">Mobile Service</h3>
+                          <p>{profile.isMobile ? "Yes" : "No"}</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="font-medium text-lg mb-2">Hourly Rate</h3>
+                          <p>{formatCurrency(profile.hourlyRate)}</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="font-medium text-lg mb-2">Experience</h3>
+                          <p>{profile.yearsOfExperience} years</p>
+                        </div>
+                      </div>
+                      
+                      {!profile.isVerified && (
+                        <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                          <h3 className="font-medium flex items-center">
+                            <AlertCircle className="mr-2 h-5 w-5 text-amber-500" />
+                            Pending Verification
+                          </h3>
+                          <p className="text-sm mt-2">
+                            Your profile is currently under review by our admin team. This usually takes 1-2 business days.
+                            You'll be able to bid on jobs once your profile is verified.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
