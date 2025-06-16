@@ -249,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Mechanic profile routes
+  // Mechanic profile routes - users can become mechanics by creating profiles
   app.post('/api/mechanic-profiles', authenticateToken, validateRequest(mechanicProfileInsertSchema), async (req, res) => {
     try {
       // Check if user already has a mechanic profile
@@ -260,7 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Only allow current user to create their own profile
       if (req.body.userId !== req.user!.userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return res.status(403).json({ message: "Forbidden: Can only create profile for yourself" });
       }
       
       const profile = await storage.createMechanicProfile(req.body);
@@ -372,12 +372,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Job routes
-  app.post('/api/jobs', authenticateToken, validateRequest(jobInsertSchema), async (req, res) => {
+  // Job routes - only car owners can post jobs
+  app.post('/api/jobs', authenticateToken, hasRole('car_owner'), validateRequest(jobInsertSchema), async (req, res) => {
     try {
       // Only allow current user to create their own job
       if (req.body.userId !== req.user!.userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return res.status(403).json({ message: "Forbidden: Can only create jobs for yourself" });
       }
       
       const job = await storage.createJob(req.body);
@@ -476,6 +476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bid routes - only mechanics can bid
   app.post('/api/bids', authenticateToken, hasRole('mechanic'), validateRequest(bidInsertSchema), async (req, res) => {
     try {
       // Check if job exists
@@ -558,7 +559,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/bids/:id/accept', authenticateToken, async (req, res) => {
+  // Only job owners (car owners) can accept bids
+  app.put('/api/bids/:id/accept', authenticateToken, hasRole('car_owner'), async (req, res) => {
     try {
       const bidId = parseInt(req.params.id);
       const bid = await storage.getBid(bidId);

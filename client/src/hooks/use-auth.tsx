@@ -169,12 +169,20 @@ export function useAuth() {
   return context;
 }
 
-// Helper function to handle 401 errors
+// Helper function to handle 401 errors with JWT
 function getQueryFn({ on401 }: { on401: "returnNull" | "throw" }) {
   return async ({ queryKey }: { queryKey: string[] }) => {
     try {
+      const headers: Record<string, string> = {};
+      
+      // Add JWT token if available
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch(queryKey[0], {
-        credentials: "include",
+        headers,
       });
 
       if (on401 === "returnNull" && res.status === 401) {
