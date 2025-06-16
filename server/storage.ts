@@ -90,10 +90,15 @@ export class MemStorage implements IStorage {
       messages: 1,
     };
 
+    // Initialize data asynchronously
+    this.initializeData();
+  }
+
+  private async initializeData() {
     // Create admin user
-    this.createUser({
+    await this.createUser({
       username: "admin",
-      password: "adminpass", // In real app this would be hashed
+      password: "adminpass",
       email: "admin@sameshit.com",
       firstName: "Admin",
       lastName: "User",
@@ -101,10 +106,10 @@ export class MemStorage implements IStorage {
     });
 
     // Create some initial mechanics
-    this.seedMechanics();
+    await this.seedMechanics();
     
     // Create some initial jobs
-    this.seedJobs();
+    await this.seedJobs();
   }
 
   // Seed some initial mechanics
@@ -279,7 +284,17 @@ export class MemStorage implements IStorage {
   async createUser(user: UserInsert): Promise<User> {
     const id = this.currentIds.users++;
     const now = new Date();
-    const newUser: User = { ...user, id, createdAt: now };
+    
+    // Hash the password before storing
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+    
+    const newUser: User = { 
+      ...user, 
+      id, 
+      createdAt: now,
+      password: hashedPassword 
+    };
     this.users.set(id, newUser);
     return newUser;
   }
@@ -541,7 +556,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(user: UserInsert): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
+    // Hash the password before storing
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+    
+    const userData = {
+      ...user,
+      password: hashedPassword
+    };
+    
+    const [newUser] = await db.insert(users).values(userData).returning();
     return newUser;
   }
 

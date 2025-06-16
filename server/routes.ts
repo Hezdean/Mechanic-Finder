@@ -74,18 +74,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   passport.use(new LocalStrategy(async (username, password, done) => {
     try {
       const user = await storage.getUserByUsername(username);
+      console.log('Login attempt for username:', username);
+      console.log('User found:', !!user);
+      
       if (!user) {
         return done(null, false, { message: 'Incorrect username' });
       }
       
       // Use bcrypt to compare the provided password with the hashed password
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log('Password validation:', isPasswordValid);
+      
       if (!isPasswordValid) {
         return done(null, false, { message: 'Incorrect password' });
       }
       
       return done(null, user);
     } catch (err) {
+      console.error('Authentication error:', err);
       return done(err);
     }
   }));
