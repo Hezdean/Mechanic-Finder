@@ -13,11 +13,22 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   try {
+    const headers: Record<string, string> = {};
+    
+    if (data) {
+      headers["Content-Type"] = "application/json";
+    }
+    
+    // Add JWT token if available
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(url, {
       method,
-      headers: data ? { "Content-Type": "application/json" } : {},
+      headers,
       body: data ? JSON.stringify(data) : undefined,
-      credentials: "include",
     });
 
     await throwIfResNotOk(res);
@@ -34,8 +45,16 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const headers: Record<string, string> = {};
+    
+    // Add JWT token if available
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
+      headers,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
