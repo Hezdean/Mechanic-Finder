@@ -66,6 +66,99 @@ const UserDashboard = () => {
           <p className="text-muted-foreground">Manage your repair jobs and mechanic reviews</p>
         </div>
 
+        {/* My Active Repair Jobs - Priority Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Wrench className="mr-2 h-5 w-5 text-primary-500" />
+              My Active Repair Jobs
+            </CardTitle>
+            <CardDescription>
+              Track the status of your current repair requests
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingMyJobs ? (
+              <div className="text-center py-6">Loading your jobs...</div>
+            ) : jobsArray.filter((job: any) => job.status !== 'completed' && job.status !== 'canceled').length ? (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Vehicle</TableHead>
+                      <TableHead>Posted</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Bids</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {jobsArray
+                      .filter((job: any) => job.status !== 'completed' && job.status !== 'canceled')
+                      .map((job: any) => (
+                        <TableRow key={job.id}>
+                          <TableCell className="font-medium">{job.title}</TableCell>
+                          <TableCell>{job.vehicle}</TableCell>
+                          <TableCell>{formatDate(job.createdAt)}</TableCell>
+                          <TableCell>
+                            <Badge className={getStatusBadgeColor(job.status)}>
+                              {job.status.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{job.bidCount || 0}</span>
+                              {job.bidCount > 0 && job.status === 'open' && (
+                                <Badge className="bg-accent text-white text-xs">
+                                  New
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant={job.bidCount > 0 && job.status === 'open' ? "default" : "outline"}
+                                onClick={() => navigate(`/jobs/${job.id}`)}
+                                className={job.bidCount > 0 && job.status === 'open' ? "bg-accent hover:bg-accent/90" : ""}
+                              >
+                                {job.bidCount > 0 && job.status === 'open' ? 'Review Bids' : 'View'}
+                              </Button>
+                              {job.status === 'in_progress' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="secondary"
+                                  onClick={() => navigate(`/messages?jobId=${job.id}`)}
+                                >
+                                  Message
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-neutral-50 rounded-md">
+                <Car className="mx-auto h-12 w-12 text-neutral-400" />
+                <h3 className="mt-4 text-lg font-medium">No active jobs</h3>
+                <p className="mt-2 text-neutral-500">
+                  You don't have any active repair jobs. Post a new job to get started.
+                </p>
+                <Link href="/jobs/post">
+                  <Button className="mt-4 bg-secondary-500 hover:bg-secondary-600">
+                    Post a Job
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
@@ -137,105 +230,12 @@ const UserDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="active">Active Jobs</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+        {/* Additional Content Tabs */}
+        <Tabs defaultValue="completed" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="completed">Completed Jobs</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
           </TabsList>
-          
-          {/* Active Jobs Tab */}
-          <TabsContent value="active">
-            <Card>
-              <CardHeader>
-                <CardTitle>My Active Repair Jobs</CardTitle>
-                <CardDescription>
-                  Track the status of your current repair requests
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoadingMyJobs ? (
-                  <div className="text-center py-6">Loading your jobs...</div>
-                ) : jobsArray.filter((job: any) => job.status !== 'completed' && job.status !== 'canceled').length ? (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Vehicle</TableHead>
-                          <TableHead>Posted</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Bids</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {jobsArray
-                          .filter((job: any) => job.status !== 'completed' && job.status !== 'canceled')
-                          .map((job: any) => (
-                            <TableRow key={job.id}>
-                              <TableCell className="font-medium">{job.title}</TableCell>
-                              <TableCell>{job.vehicle}</TableCell>
-                              <TableCell>{formatDate(job.createdAt)}</TableCell>
-                              <TableCell>
-                                <Badge className={getStatusBadgeColor(job.status)}>
-                                  {job.status.replace('_', ' ')}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">{job.bidCount || 0}</span>
-                                  {job.bidCount > 0 && job.status === 'open' && (
-                                    <Badge className="bg-accent text-white text-xs">
-                                      New
-                                    </Badge>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant={job.bidCount > 0 && job.status === 'open' ? "default" : "outline"}
-                                    onClick={() => navigate(`/jobs/${job.id}`)}
-                                    className={job.bidCount > 0 && job.status === 'open' ? "bg-accent hover:bg-accent/90" : ""}
-                                  >
-                                    {job.bidCount > 0 && job.status === 'open' ? 'Review Bids' : 'View'}
-                                  </Button>
-                                  {job.status === 'in_progress' && (
-                                    <Button 
-                                      size="sm" 
-                                      variant="secondary"
-                                      onClick={() => navigate(`/messages?jobId=${job.id}`)}
-                                    >
-                                      Message
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 bg-neutral-50 rounded-md">
-                    <Car className="mx-auto h-12 w-12 text-neutral-400" />
-                    <h3 className="mt-4 text-lg font-medium">No active jobs</h3>
-                    <p className="mt-2 text-neutral-500">
-                      You don't have any active repair jobs. Post a new job to get started.
-                    </p>
-                    <Link href="/jobs/post">
-                      <Button className="mt-4 bg-secondary-500 hover:bg-secondary-600">
-                        Post a Job
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
           
           {/* Completed Jobs Tab */}
           <TabsContent value="completed">

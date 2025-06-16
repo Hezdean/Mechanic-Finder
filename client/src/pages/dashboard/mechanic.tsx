@@ -548,13 +548,8 @@ const MechanicDashboard = () => {
                 <div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h3 className="font-medium text-lg mb-2">Experience</h3>
-                      <p>{profile.yearsOfExperience} years</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">Hourly Rate</h3>
-                      <p>{formatCurrency(profile.hourlyRate)}</p>
+                      <h3 className="font-medium text-lg mb-2">Rating</h3>
+                      <p>{profile.rating / 10} ({profile.reviewCount} reviews)</p>
                     </div>
                     
                     <div>
@@ -563,8 +558,13 @@ const MechanicDashboard = () => {
                     </div>
                     
                     <div>
-                      <h3 className="font-medium text-lg mb-2">Rating</h3>
-                      <p>{profile.rating / 10} ({profile.reviewCount} reviews)</p>
+                      <h3 className="font-medium text-lg mb-2">Hourly Rate</h3>
+                      <p>{formatCurrency(profile.hourlyRate)}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-medium text-lg mb-2">Experience</h3>
+                      <p>{profile.yearsOfExperience} years</p>
                     </div>
                   </div>
                   
