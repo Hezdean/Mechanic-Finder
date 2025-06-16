@@ -374,7 +374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Job routes - only car owners can post jobs
-  app.post('/api/jobs', authenticateToken, hasRole('car_owner'), validateRequest(jobInsertSchema), async (req, res) => {
+  app.post('/api/jobs', authenticateToken, validateRequest(jobInsertSchema), async (req, res) => {
     try {
       // Only allow current user to create their own job
       if (req.body.userId !== req.user!.userId) {
@@ -467,7 +467,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Bid routes
   // Get all bids for the current mechanic
-  app.get('/api/mechanic/bids', authenticateToken, hasRole('mechanic'), async (req, res) => {
+  app.get('/api/mechanic/bids', authenticateToken, async (req, res) => {
     try {
       const mechanicId = req.user!.userId;
       const bids = await storage.listBidsByMechanicId(mechanicId);
@@ -478,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bid routes - only mechanics can bid
-  app.post('/api/bids', authenticateToken, hasRole('mechanic'), validateRequest(bidInsertSchema), async (req, res) => {
+  app.post('/api/bids', authenticateToken, validateRequest(bidInsertSchema), async (req, res) => {
     try {
       // Check if job exists
       const job = await storage.getJob(req.body.jobId);
@@ -560,8 +560,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Only job owners (car owners) can accept bids
-  app.put('/api/bids/:id/accept', authenticateToken, hasRole('car_owner'), async (req, res) => {
+  // Only job owners can accept bids
+  app.put('/api/bids/:id/accept', authenticateToken, async (req, res) => {
     try {
       const bidId = parseInt(req.params.id);
       const bid = await storage.getBid(bidId);
@@ -618,8 +618,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Review routes - only car owners can leave reviews
-  app.post('/api/reviews', authenticateToken, hasRole('car_owner'), validateRequest(reviewInsertSchema), async (req, res) => {
+  // Review routes - only job owners can leave reviews
+  app.post('/api/reviews', authenticateToken, validateRequest(reviewInsertSchema), async (req, res) => {
     try {
       const job = await storage.getJob(req.body.jobId);
       
