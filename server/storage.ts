@@ -906,6 +906,50 @@ export class DatabaseStorage implements IStorage {
       .where(eq(messages.jobId, jobId))
       .orderBy(messages.createdAt);
   }
+
+  // Transaction methods
+  async getTransaction(id: number): Promise<Transaction | undefined> {
+    const [transaction] = await db.select().from(transactions).where(eq(transactions.id, id));
+    return transaction || undefined;
+  }
+
+  async createTransaction(transaction: TransactionInsert): Promise<Transaction> {
+    const [newTransaction] = await db.insert(transactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async updateTransaction(id: number, transactionData: Partial<Transaction>): Promise<Transaction | undefined> {
+    const [updatedTransaction] = await db
+      .update(transactions)
+      .set({ ...transactionData, updatedAt: new Date() })
+      .where(eq(transactions.id, id))
+      .returning();
+    return updatedTransaction || undefined;
+  }
+
+  async listTransactionsByJobId(jobId: number): Promise<Transaction[]> {
+    return await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.jobId, jobId))
+      .orderBy(transactions.createdAt);
+  }
+
+  async listTransactionsByUserId(userId: number): Promise<Transaction[]> {
+    return await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.userId, userId))
+      .orderBy(transactions.createdAt);
+  }
+
+  async listTransactionsByMechanicId(mechanicId: number): Promise<Transaction[]> {
+    return await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.mechanicId, mechanicId))
+      .orderBy(transactions.createdAt);
+  }
 }
 
 export const storage = new MemStorage();

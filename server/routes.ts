@@ -8,7 +8,8 @@ import {
   jobInsertSchema,
   bidInsertSchema,
   reviewInsertSchema,
-  messageInsertSchema
+  messageInsertSchema,
+  transactionInsertSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import { generateToken, verifyToken, refreshToken, type JwtPayload } from "./jwt";
@@ -817,6 +818,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedMessage);
     } catch (error) {
       res.status(500).json({ message: "Error marking message as read", error });
+    }
+  });
+
+  // Transaction routes
+  app.post('/api/transactions', authenticateToken, validateRequest(transactionInsertSchema), async (req, res) => {
+    try {
+      const jobId = req.body.jobId;
+      const job = await storage.getJob(jobId);
+      
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+      
+      // Only allow job owner to create payment
+      if (job.userId !== req.user!.userId) {
+        return res.status(403).json({ message: "Only job owner can make payment" });
+      }
+      
+      // Verify job is in accepted status
+      if (job.status !== 'accepted') {
+        return res.status(400).json({ message: "Job must be accepted before payment" });
+      }
+      
+      // Verify mechanic is assigned
+      if (!job.assignedMechanicId) {
+        return res.status(400).json({ message: "No mechanic assigned to this job" });
+      }
+      
+      // Create transaction
+      const transactionData = {
+        ...req.body,
+        userId: req.user!.userId,
+        mechanicId: job.assignedMechanicId,
+        status: 'pending'
+      };
+      
+      const transaction = await storage.createTransaction(transactionData);
+      res.status(201).json(transaction);
+    } catch (error) {
+      res.status(500).json({ message: "Error creating transaction", error });
+    }
+  });
+
+  app.get('/api/transactions', authenticateToken, async (req, res) => {
+    try {
+      let transactions;
+      
+      if (req.query.jobId) {
+        const jobId = parseInt(req.query.jobId as string);
+        const job = await storage.getJob(jobId);
+        
+        if (!job) {
+          return res.status(404).json({ message: "Job not found" });
+        }
+        
+        // Check if user is involved with the job
+        if (req.user!.userId !== job.userId && req.user!.userId !== job.assignedMechanicId) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+        
+        transactions = await storage.listTransactionsByJobId(jobId);
+      } else if (req.query.mechanicId) {
+        const mechanicId = parseInt(req.query.mechanicId as string);
+        
+        // Check if user is the mechanic or admin
+        if (req.user!.userId !== mechanicId && (req.user as any).role !== 'admin') {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+        
+        transactions = await storage.listTransactionsByMechanicId(mechanicId);
+      } else {
+        // Get user's transactions (as payer)
+        transactions = await storage.listTransactionsByUserId(req.user!.userId);
+      }
+      
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Error retrieving transactions", error });
+    }
+  });
+
+  app.put('/api/transactions/:id', authenticateToken, async (req, res) => {
+    try {
+      const transactionId = parseInt(req.params.id);
+      const transaction = await storage.getTransaction(transactionId);
+      
+      if (!transaction) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+      
+      // Only allow the payer or admin to update transaction
+      if (transaction.userId !== req.user!.userId && (req.user as any).role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const updatedTransaction = await storage.updateTransaction(transactionId, req.body);
+      res.json(updatedTransaction);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating transaction", error });
     }
   });
 
