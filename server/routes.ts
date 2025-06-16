@@ -617,8 +617,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Review routes
-  app.post('/api/reviews', authenticateToken, validateRequest(reviewInsertSchema), async (req, res) => {
+  // Review routes - only car owners can leave reviews
+  app.post('/api/reviews', authenticateToken, hasRole('car_owner'), validateRequest(reviewInsertSchema), async (req, res) => {
     try {
       const job = await storage.getJob(req.body.jobId);
       
@@ -628,7 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Only job owner can leave a review and only for completed jobs
       if (req.user!.userId !== job.userId) {
-        return res.status(403).json({ message: "Forbidden" });
+        return res.status(403).json({ message: "Forbidden: Can only review jobs you posted" });
       }
       
       if (job.status !== 'completed') {
