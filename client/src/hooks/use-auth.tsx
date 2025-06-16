@@ -32,6 +32,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  token: string | null;
   login: (credentials: LoginCredentials) => Promise<User>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<User>;
@@ -41,55 +42,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  // Check if we have a stored user from session storage or local storage
+  // Check if we have a stored token and user
   useEffect(() => {
-    // Try session storage first
-    const sessionUser = sessionStorage.getItem('currentUser');
-    if (sessionUser) {
-      try {
-        const parsedUser = JSON.parse(sessionUser);
-        setUser(parsedUser);
-        return; // Exit if we found user in session storage
-      } catch (e) {
-        console.error("Failed to parse stored user from session storage:", e);
-        sessionStorage.removeItem('currentUser');
-      }
-    }
+    const storedToken = localStorage.getItem('authToken');
+    const storedUser = localStorage.getItem('currentUser');
     
-    // Try local storage as fallback
-    const localUser = localStorage.getItem('currentUser');
-    if (localUser) {
+    if (storedToken && storedUser) {
       try {
-        const parsedUser = JSON.parse(localUser);
+        const parsedUser = JSON.parse(storedUser);
+        setToken(storedToken);
         setUser(parsedUser);
-        // Also update session storage
-        sessionStorage.setItem('currentUser', localUser);
       } catch (e) {
-        console.error("Failed to parse stored user from local storage:", e);
+        console.error("Failed to parse stored user:", e);
+        localStorage.removeItem('authToken');
         localStorage.removeItem('currentUser');
       }
     }
   }, []);
 
-  // Get current user
+  // Get current user (only if we have a token)
   const { isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
     queryFn: getQueryFn({ on401: "returnNull" }),
-    onSuccess: (userData: any) => {
-      if (userData) {
-        setUser(userData);
-        // Store in session storage for persistence
-        sessionStorage.setItem('currentUser', JSON.stringify(userData));
-      } else {
-        const storedUser = sessionStorage.getItem('currentUser');
-        if (!storedUser) {
-          setUser(null);
-        }
-      }
-    },
+    enabled: !!token,
     staleTime: 300000, // 5 minutes
   });
 
@@ -99,14 +78,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       apiRequest('/api/auth/login', 'POST', credentials)
         .then(res => res.json()),
     onSuccess: (data) => {
-      setUser(data);
-      // Store user data in both storages for persistence
-      localStorage.setItem('currentUser', JSON.stringify(data));
-      sessionStorage.setItem('currentUser', JSON.stringify(data));
+      setUser(data.user);
+      setToken(data.token);
+      // Store both user and token
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      localStorage.setItem('authToken', data.token);
       queryClient.invalidateQueries({queryKey: ['/api/auth/me']});
       toast({
         title: "Login successful",
-        description: `Welcome back, ${data.firstName}!`,
+        description: `Welcome back, ${data.user.firstName}!`,
       });
     },
     onError: (error) => {
@@ -118,34 +98,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: () => apiRequest('/api/auth/logout', 'POST'),
-    onSuccess: () => {
-      setUser(null);
-      // Clear storage on logout
-      localStorage.removeItem('currentUser');
-      sessionStorage.removeItem('currentUser');
-      queryClient.invalidateQueries();
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
-      });
-      navigate("/");
-    },
-    onError: (error) => {
-      // Even if the API call fails, we should still clear local storage
-      setUser(null);
-      localStorage.removeItem('currentUser');
-      sessionStorage.removeItem('currentUser');
-      
-      toast({
-        title: "Logged out",
-        description: "You have been logged out",
-      });
-      navigate("/");
-    },
-  });
+  // Logout function (JWT tokens are stateless, no server-side logout needed)
+  const logout = async (): Promise<void> => {
+    setUser(null);
+    setToken(null);
+    // Clear storage on logout
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('authToken');
+    queryClient.invalidateQueries();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out",
+    });
+    navigate("/");
+  };
 
   // Register mutation
   const registerMutation = useMutation({
@@ -170,11 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = async (credentials: LoginCredentials): Promise<User> => {
-    return loginMutation.mutateAsync(credentials);
-  };
-
-  const logout = async (): Promise<void> => {
-    await logoutMutation.mutateAsync();
+    const result = await loginMutation.mutateAsync(credentials);
+    return result.user;
   };
 
   const register = async (data: RegisterData): Promise<User> => {
@@ -185,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        token,
         isLoading,
         isAuthenticated: !!user,
         login,
