@@ -455,7 +455,13 @@ export class MemStorage implements IStorage {
   async createBid(bid: BidInsert): Promise<Bid> {
     const id = this.currentIds.bids++;
     const now = new Date();
-    const newBid: Bid = { ...bid, id, status: "pending", createdAt: now };
+    const newBid: Bid = { 
+      ...bid, 
+      id, 
+      status: "pending", 
+      estimatedTime: bid.estimatedTime || null,
+      createdAt: now 
+    };
     this.bids.set(id, newBid);
     return newBid;
   }
@@ -512,7 +518,12 @@ export class MemStorage implements IStorage {
   async createReview(review: ReviewInsert): Promise<Review> {
     const id = this.currentIds.reviews++;
     const now = new Date();
-    const newReview: Review = { ...review, id, createdAt: now };
+    const newReview: Review = { 
+      ...review, 
+      id, 
+      comment: review.comment || null,
+      createdAt: now 
+    };
     this.reviews.set(id, newReview);
     
     // Update mechanic's rating
@@ -548,7 +559,13 @@ export class MemStorage implements IStorage {
   async createMessage(message: MessageInsert): Promise<Message> {
     const id = this.currentIds.messages++;
     const now = new Date();
-    const newMessage: Message = { ...message, id, isRead: false, createdAt: now };
+    const newMessage: Message = { 
+      ...message, 
+      id, 
+      jobId: message.jobId || null,
+      isRead: false, 
+      createdAt: now 
+    };
     this.messages.set(id, newMessage);
     return newMessage;
   }
