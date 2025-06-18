@@ -352,7 +352,7 @@ export class MemStorage implements IStorage {
       address: user.address ?? null,
       city: user.city ?? null,
       state: user.state ?? null,
-
+      zip: user.zip ?? null,
       profilePicture: user.profilePicture ?? null,
       bio: user.bio ?? null,
       emailVerified: false,
