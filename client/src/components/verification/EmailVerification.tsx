@@ -1,202 +1,160 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label";
-import { Mail, CheckCircle, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { CheckCircle, Mail, RefreshCw } from "lucide-react";
 
-interface EmailVerificationProps {
-  onSuccess?: () => void;
-  isVerified?: boolean;
-}
-
-export function EmailVerification({ onSuccess, isVerified = false }: EmailVerificationProps) {
+export function EmailVerification() {
   const [verificationCode, setVerificationCode] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
+  const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const sendEmailMutation = useMutation({
-    mutationFn: () => apiRequest("/api/verification/send-email", {
-      method: "POST",
-    }),
+  const sendCodeMutation = useMutation({
+    mutationFn: () => 
+      apiRequest(`/api/verification/send-email`, "POST"),
     onSuccess: () => {
-      setEmailSent(true);
       toast({
         title: "Verification email sent",
-        description: "Please check your inbox for the verification code.",
+        description: "Please check your email for the verification code.",
       });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
-        title: "Failed to send email",
-        description: error.message || "Please try again later.",
+        title: "Error",
+        description: "Failed to send verification email. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const verifyEmailMutation = useMutation({
-    mutationFn: (code: string) => apiRequest("/api/verification/verify-email", {
-      method: "POST",
-      body: JSON.stringify({ code }),
-    }),
+  const verifyCodeMutation = useMutation({
+    mutationFn: (code: string) => 
+      apiRequest(`/api/verification/verify-email`, "POST", { code }),
     onSuccess: () => {
       toast({
-        title: "Email verified",
-        description: "Your email has been successfully verified.",
+        title: "Email verified successfully",
+        description: "Your email has been verified.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      onSuccess?.();
+      setVerificationCode("");
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "Verification failed",
-        description: error.message || "Invalid or expired code.",
+        description: "Invalid verification code. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const resendEmailMutation = useMutation({
-    mutationFn: () => apiRequest("/api/verification/resend", {
-      method: "POST",
-      body: JSON.stringify({ type: "email" }),
-    }),
+  const resendCodeMutation = useMutation({
+    mutationFn: () => 
+      apiRequest(`/api/verification/resend-email`, "POST", { userId: user?.id }),
     onSuccess: () => {
       toast({
-        title: "Email resent",
-        description: "A new verification email has been sent.",
+        title: "New verification email sent",
+        description: "A new verification code has been sent to your email.",
       });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
-        title: "Failed to resend email",
-        description: error.message || "Please try again later.",
+        title: "Error",
+        description: "Failed to resend verification email.",
         variant: "destructive",
       });
     },
   });
 
-  const handleSendEmail = () => {
-    sendEmailMutation.mutate();
-  };
-
-  const handleVerifyEmail = () => {
-    if (!verificationCode.trim()) {
-      toast({
-        title: "Code required",
-        description: "Please enter the verification code.",
-        variant: "destructive",
-      });
-      return;
+  const handleVerifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (verificationCode.trim()) {
+      verifyCodeMutation.mutate(verificationCode);
     }
-    verifyEmailMutation.mutate(verificationCode);
   };
 
-  const handleResendEmail = () => {
-    resendEmailMutation.mutate();
-  };
-
-  if (isVerified) {
+  if (user?.emailVerified) {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center mb-2">
-            <CheckCircle className="h-12 w-12 text-green-600" />
-          </div>
-          <CardTitle className="text-green-700">Email Verified</CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            Email Verified
+          </CardTitle>
           <CardDescription>
             Your email address has been successfully verified.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <Badge variant="default" className="bg-green-100 text-green-800">
+            <Mail className="h-3 w-3 mr-1" />
+            {user.email} - Verified
+          </Badge>
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="flex items-center justify-center mb-2">
-          <Mail className="h-12 w-12 text-blue-600" />
-        </div>
-        <CardTitle>Verify Your Email</CardTitle>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          Email Verification
+        </CardTitle>
         <CardDescription>
-          {emailSent 
-            ? "Enter the verification code sent to your email"
-            : "Click below to send a verification code to your email"
-          }
+          Verify your email address to enhance account security and receive important notifications.
         </CardDescription>
       </CardHeader>
-      
       <CardContent className="space-y-4">
-        {!emailSent ? (
+        <Alert>
+          <AlertDescription>
+            Email: <strong>{user?.email}</strong>
+          </AlertDescription>
+        </Alert>
+
+        <form onSubmit={handleVerifyCode} className="space-y-4">
+          <div>
+            <Input
+              type="text"
+              placeholder="Enter verification code"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              maxLength={6}
+            />
+          </div>
           <Button 
-            onClick={handleSendEmail}
-            disabled={sendEmailMutation.isPending}
+            type="submit" 
+            disabled={verifyCodeMutation.isPending || !verificationCode.trim()}
             className="w-full"
           >
-            {sendEmailMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              "Send Verification Email"
-            )}
+            {verifyCodeMutation.isPending ? "Verifying..." : "Verify Email"}
           </Button>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="verification-code">Verification Code</Label>
-              <Input
-                id="verification-code"
-                type="text"
-                placeholder="Enter 6-digit code"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                maxLength={6}
-                className="text-center text-lg tracking-widest"
-              />
-            </div>
-            
-            <Button 
-              onClick={handleVerifyEmail}
-              disabled={verifyEmailMutation.isPending}
-              className="w-full"
-            >
-              {verifyEmailMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                "Verify Email"
-              )}
-            </Button>
-            
-            <div className="text-center">
-              <Button
-                variant="ghost"
-                onClick={handleResendEmail}
-                disabled={resendEmailMutation.isPending}
-                className="text-sm"
-              >
-                {resendEmailMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Resending...
-                  </>
-                ) : (
-                  "Resend Email"
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
+        </form>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => sendCodeMutation.mutate()}
+            disabled={sendCodeMutation.isPending}
+            className="flex-1"
+          >
+            {sendCodeMutation.isPending ? "Sending..." : "Send Code"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => resendCodeMutation.mutate()}
+            disabled={resendCodeMutation.isPending}
+            className="flex-1"
+          >
+            <RefreshCw className={`h-4 w-4 mr-1 ${resendCodeMutation.isPending ? 'animate-spin' : ''}`} />
+            {resendCodeMutation.isPending ? "Resending..." : "Resend"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

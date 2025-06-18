@@ -136,6 +136,7 @@ export class MemStorage implements IStorage {
         reviews: 1,
         messages: 1,
         transactions: 1,
+        verificationCodes: 1,
       };
       
       // Create admin user with bcrypt-hashed password
@@ -329,7 +330,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return [...this.users.values()].find(user => user.email === email);
+    return Array.from(this.users.values()).find(user => user.email === email);
   }
 
   async createUser(user: UserInsert): Promise<User> {
@@ -343,6 +344,15 @@ export class MemStorage implements IStorage {
     const newUser: User = { 
       ...user, 
       id, 
+      role: user.role || "user",
+      phone: user.phone || null,
+      address: user.address || null,
+      city: user.city || null,
+      state: user.state || null,
+      zipCode: user.zipCode || null,
+      profilePicture: user.profilePicture || null,
+      emailVerified: false,
+      phoneVerified: false,
       createdAt: now,
       password: hashedPassword 
     };
