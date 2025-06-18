@@ -78,8 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginCredentials) => 
-      apiRequest('/api/auth/login', 'POST', credentials)
-        .then(res => res.json()),
+      apiRequest('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials)
+      }).then(res => res.json()),
     onSuccess: (data) => {
       setUser(data.user);
       setToken(data.token);
@@ -128,8 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (data: RegisterData) => 
-      apiRequest('/api/users', 'POST', data)
-        .then(res => res.json()),
+      apiRequest('/api/users', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }).then(res => res.json()),
     onSuccess: (data) => {
       toast({
         title: "Registration successful",

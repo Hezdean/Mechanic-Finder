@@ -85,7 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify password with bcrypt
+      console.log('Login attempt:', { username, passwordLength: password.length, hashedPasswordLength: user.password.length });
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log('Password validation result:', isPasswordValid);
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
