@@ -1,19 +1,18 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { CheckCircle, Mail, RefreshCw } from "lucide-react";
+import { CheckCircle, Mail } from "lucide-react";
 
 export function EmailVerification() {
   const [verificationCode, setVerificationCode] = useState("");
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const sendCodeMutation = useMutation({
     mutationFn: () => 
@@ -24,10 +23,10 @@ export function EmailVerification() {
         description: "Please check your email for the verification code.",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to send verification email. Please try again.",
+        description: error.message || "Failed to send verification email.",
         variant: "destructive",
       });
     },
@@ -41,12 +40,12 @@ export function EmailVerification() {
         title: "Email verified successfully",
         description: "Your email has been verified.",
       });
-      setVerificationCode("");
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Verification failed",
-        description: "Invalid verification code. Please try again.",
+        description: error.message || "Invalid verification code.",
         variant: "destructive",
       });
     },
@@ -61,39 +60,23 @@ export function EmailVerification() {
         description: "A new verification code has been sent to your email.",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to resend verification email.",
+        description: error.message || "Failed to resend verification email.",
         variant: "destructive",
       });
     },
   });
 
-  const handleVerifyCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (verificationCode.trim()) {
-      verifyCodeMutation.mutate(verificationCode);
-    }
-  };
-
   if (user?.emailVerified) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            Email Verified
-          </CardTitle>
-          <CardDescription>
-            Your email address has been successfully verified.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Badge variant="default" className="bg-green-100 text-green-800">
-            <Mail className="h-3 w-3 mr-1" />
-            {user.email} - Verified
-          </Badge>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 text-green-600">
+            <CheckCircle className="h-5 w-5" />
+            <span>Email verified</span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -107,52 +90,38 @@ export function EmailVerification() {
           Email Verification
         </CardTitle>
         <CardDescription>
-          Verify your email address to enhance account security and receive important notifications.
+          Verify your email address to secure your account
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Alert>
-          <AlertDescription>
-            Email: <strong>{user?.email}</strong>
-          </AlertDescription>
-        </Alert>
-
-        <form onSubmit={handleVerifyCode} className="space-y-4">
-          <div>
-            <Input
-              type="text"
-              placeholder="Enter verification code"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              maxLength={6}
-            />
-          </div>
+        <div className="flex gap-2">
           <Button 
-            type="submit" 
+            onClick={() => sendCodeMutation.mutate()}
+            disabled={sendCodeMutation.isPending}
+          >
+            {sendCodeMutation.isPending ? "Sending..." : "Send Verification Code"}
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => resendCodeMutation.mutate()}
+            disabled={resendCodeMutation.isPending}
+          >
+            {resendCodeMutation.isPending ? "Resending..." : "Resend Code"}
+          </Button>
+        </div>
+        
+        <div className="space-y-2">
+          <Input
+            placeholder="Enter verification code"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+          />
+          <Button 
+            onClick={() => verifyCodeMutation.mutate(verificationCode)}
             disabled={verifyCodeMutation.isPending || !verificationCode.trim()}
             className="w-full"
           >
             {verifyCodeMutation.isPending ? "Verifying..." : "Verify Email"}
-          </Button>
-        </form>
-
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => sendCodeMutation.mutate()}
-            disabled={sendCodeMutation.isPending}
-            className="flex-1"
-          >
-            {sendCodeMutation.isPending ? "Sending..." : "Send Code"}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => resendCodeMutation.mutate()}
-            disabled={resendCodeMutation.isPending}
-            className="flex-1"
-          >
-            <RefreshCw className={`h-4 w-4 mr-1 ${resendCodeMutation.isPending ? 'animate-spin' : ''}`} />
-            {resendCodeMutation.isPending ? "Resending..." : "Resend"}
           </Button>
         </div>
       </CardContent>

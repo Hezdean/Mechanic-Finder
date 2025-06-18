@@ -326,7 +326,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return [...this.users.values()].find(user => user.username === username);
+    return Array.from(this.users.values()).find(user => user.username === username);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
@@ -342,15 +342,19 @@ export class MemStorage implements IStorage {
     const hashedPassword = await bcrypt.hash(user.password, saltRounds);
     
     const newUser: User = { 
-      ...user, 
       id, 
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: user.role || "user",
-      phone: user.phone || null,
-      address: user.address || null,
-      city: user.city || null,
-      state: user.state || null,
-      zipCode: user.zipCode || null,
-      profilePicture: user.profilePicture || null,
+      phone: user.phone ?? null,
+      address: user.address ?? null,
+      city: user.city ?? null,
+      state: user.state ?? null,
+
+      profilePicture: user.profilePicture ?? null,
+      bio: user.bio ?? null,
       emailVerified: false,
       phoneVerified: false,
       createdAt: now,
@@ -370,7 +374,7 @@ export class MemStorage implements IStorage {
   }
 
   async listUsers(): Promise<User[]> {
-    return [...this.users.values()];
+    return Array.from(this.users.values());
   }
 
   // Mechanic profile methods
@@ -379,7 +383,7 @@ export class MemStorage implements IStorage {
   }
 
   async getMechanicProfileByUserId(userId: number): Promise<MechanicProfile | undefined> {
-    return [...this.mechanicProfiles.values()].find(profile => profile.userId === userId);
+    return Array.from(this.mechanicProfiles.values()).find(profile => profile.userId === userId);
   }
 
   async createMechanicProfile(profile: MechanicProfileInsert): Promise<MechanicProfile> {
@@ -405,7 +409,7 @@ export class MemStorage implements IStorage {
   }
 
   async listMechanicProfiles(limit: number = 0): Promise<MechanicProfile[]> {
-    const profiles = [...this.mechanicProfiles.values()];
+    const profiles = Array.from(this.mechanicProfiles.values());
     return limit > 0 ? profiles.slice(0, limit) : profiles;
   }
 
@@ -486,11 +490,11 @@ export class MemStorage implements IStorage {
   }
 
   async listBidsByJobId(jobId: number): Promise<Bid[]> {
-    return [...this.bids.values()].filter(bid => bid.jobId === jobId);
+    return Array.from(this.bids.values()).filter(bid => bid.jobId === jobId);
   }
 
   async listBidsByMechanicId(mechanicId: number): Promise<Bid[]> {
-    return [...this.bids.values()].filter(bid => bid.mechanicId === mechanicId);
+    return Array.from(this.bids.values()).filter(bid => bid.mechanicId === mechanicId);
   }
 
   async acceptBid(id: number): Promise<Bid | undefined> {
@@ -554,11 +558,11 @@ export class MemStorage implements IStorage {
   }
 
   async listReviewsByMechanicId(mechanicId: number): Promise<Review[]> {
-    return [...this.reviews.values()].filter(review => review.mechanicId === mechanicId);
+    return Array.from(this.reviews.values()).filter(review => review.mechanicId === mechanicId);
   }
 
   async listReviewsByUserId(userId: number): Promise<Review[]> {
-    return [...this.reviews.values()].filter(review => review.userId === userId);
+    return Array.from(this.reviews.values()).filter(review => review.userId === userId);
   }
 
   // Message methods

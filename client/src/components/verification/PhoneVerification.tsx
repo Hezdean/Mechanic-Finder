@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { CheckCircle, Phone, RefreshCw } from "lucide-react";
+import { CheckCircle, Phone } from "lucide-react";
 
 export function PhoneVerification() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -16,6 +14,7 @@ export function PhoneVerification() {
   const [step, setStep] = useState<"phone" | "code">("phone");
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const sendCodeMutation = useMutation({
     mutationFn: (phone: string) => 
@@ -27,10 +26,10 @@ export function PhoneVerification() {
       });
       setStep("code");
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to send verification code. Please try again.",
+        description: error.message || "Failed to send verification code.",
         variant: "destructive",
       });
     },
@@ -44,13 +43,15 @@ export function PhoneVerification() {
         title: "Phone verified successfully",
         description: "Your phone number has been verified.",
       });
-      setVerificationCode("");
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       setStep("phone");
+      setPhoneNumber("");
+      setVerificationCode("");
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Verification failed",
-        description: "Invalid verification code. Please try again.",
+        description: error.message || "Invalid verification code.",
         variant: "destructive",
       });
     },
@@ -65,46 +66,23 @@ export function PhoneVerification() {
         description: "A new verification code has been sent to your phone.",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to resend verification code.",
+        description: error.message || "Failed to resend verification code.",
         variant: "destructive",
       });
     },
   });
 
-  const handleSendCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (phoneNumber.trim()) {
-      sendCodeMutation.mutate(phoneNumber);
-    }
-  };
-
-  const handleVerifyCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (verificationCode.trim()) {
-      verifyCodeMutation.mutate(verificationCode);
-    }
-  };
-
   if (user?.phoneVerified) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            Phone Verified
-          </CardTitle>
-          <CardDescription>
-            Your phone number has been successfully verified.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Badge variant="default" className="bg-green-100 text-green-800">
-            <Phone className="h-3 w-3 mr-1" />
-            {user.phone} - Verified
-          </Badge>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 text-green-600">
+            <CheckCircle className="h-5 w-5" />
+            <span>Phone verified</span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -118,74 +96,56 @@ export function PhoneVerification() {
           Phone Verification
         </CardTitle>
         <CardDescription>
-          Verify your phone number to enhance account security and receive SMS notifications.
+          Verify your phone number for enhanced security
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {step === "phone" ? (
-          <form onSubmit={handleSendCode} className="space-y-4">
-            <div>
-              <Input
-                type="tel"
-                placeholder="Enter your phone number (e.g., +1234567890)"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-            </div>
+          <div className="space-y-2">
+            <Input
+              placeholder="Enter phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
             <Button 
-              type="submit" 
+              onClick={() => sendCodeMutation.mutate(phoneNumber)}
               disabled={sendCodeMutation.isPending || !phoneNumber.trim()}
               className="w-full"
             >
               {sendCodeMutation.isPending ? "Sending..." : "Send Verification Code"}
             </Button>
-          </form>
+          </div>
         ) : (
-          <>
-            <Alert>
-              <AlertDescription>
-                Code sent to: <strong>{phoneNumber}</strong>
-              </AlertDescription>
-            </Alert>
-
-            <form onSubmit={handleVerifyCode} className="space-y-4">
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Enter verification code"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  maxLength={6}
-                />
-              </div>
+          <div className="space-y-2">
+            <Input
+              placeholder="Enter verification code"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+            />
+            <div className="flex gap-2">
               <Button 
-                type="submit" 
+                onClick={() => verifyCodeMutation.mutate(verificationCode)}
                 disabled={verifyCodeMutation.isPending || !verificationCode.trim()}
-                className="w-full"
+                className="flex-1"
               >
                 {verifyCodeMutation.isPending ? "Verifying..." : "Verify Phone"}
               </Button>
-            </form>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setStep("phone")}
-                className="flex-1"
-              >
-                Change Number
-              </Button>
-              <Button
+              <Button 
                 variant="outline"
                 onClick={() => resendCodeMutation.mutate()}
                 disabled={resendCodeMutation.isPending}
-                className="flex-1"
               >
-                <RefreshCw className={`h-4 w-4 mr-1 ${resendCodeMutation.isPending ? 'animate-spin' : ''}`} />
                 {resendCodeMutation.isPending ? "Resending..." : "Resend"}
               </Button>
             </div>
-          </>
+            <Button 
+              variant="ghost"
+              onClick={() => setStep("phone")}
+              className="w-full"
+            >
+              Change Phone Number
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>
