@@ -19,6 +19,8 @@ export const users = pgTable("users", {
   zip: text("zip"),
   profilePicture: text("profile_picture"),
   bio: text("bio"),
+  emailVerified: boolean("email_verified").default(false),
+  phoneVerified: boolean("phone_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
