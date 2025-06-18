@@ -78,13 +78,14 @@ const PostJob = () => {
       method: 'POST',
       body: JSON.stringify(data)
     }),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
+      const data = await response.json();
       queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
       toast({
         title: "Job posted successfully",
         description: "Mechanics will now be able to view your job and place bids.",
       });
-      navigate(`/jobs/${response.id}`);
+      navigate(`/jobs/${data.id}`);
     },
     onError: (error) => {
       toast({

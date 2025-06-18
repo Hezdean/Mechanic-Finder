@@ -104,7 +104,10 @@ const Messages = () => {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('POST', '/api/messages', data),
+    mutationFn: (data: any) => apiRequest('/api/messages', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
     onSuccess: () => {
       setMessage("");
       queryClient.invalidateQueries({ queryKey: [`/api/messages?conversation=${selectedConversation}`] });
@@ -121,7 +124,9 @@ const Messages = () => {
 
   // Mark message as read mutation
   const markAsReadMutation = useMutation({
-    mutationFn: (messageId: number) => apiRequest('PUT', `/api/messages/${messageId}/read`),
+    mutationFn: (messageId: number) => apiRequest(`/api/messages/${messageId}/read`, {
+      method: 'PUT'
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/messages?userId=${user?.id}`] });
     },

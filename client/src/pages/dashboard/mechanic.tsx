@@ -175,7 +175,10 @@ const MechanicDashboard = () => {
 
   // Create profile mutation
   const createProfileMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('POST', '/api/mechanic-profiles', data),
+    mutationFn: (data: any) => apiRequest('/api/mechanic-profiles', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/mechanic-profiles/user/${user.id}`] });
       setIsProfileFormOpen(false);
@@ -195,7 +198,10 @@ const MechanicDashboard = () => {
 
   // Create bid mutation
   const createBidMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('POST', '/api/bids', data),
+    mutationFn: (data: any) => apiRequest('/api/bids', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
       setIsBidFormOpen(false);

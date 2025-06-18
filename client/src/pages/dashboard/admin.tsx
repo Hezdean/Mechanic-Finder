@@ -73,7 +73,9 @@ const AdminDashboard = () => {
 
   // Mutation for verifying mechanic profiles
   const verifyMutation = useMutation({
-    mutationFn: (id: number) => apiRequest('PUT', `/api/mechanic-profiles/${id}/verify`),
+    mutationFn: (id: number) => apiRequest(`/api/mechanic-profiles/${id}/verify`, {
+      method: 'PUT'
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/mechanic-profiles'] });
       toast({
