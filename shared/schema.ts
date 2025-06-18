@@ -286,3 +286,33 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     relationName: "mechanicTransactions",
   }),
 }));
+
+// Verification codes table for email and phone verification
+export const verificationCodes = pgTable("verification_codes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
+  code: text("code").notNull(),
+  type: text("type").notNull(), // 'email' or 'phone'
+  purpose: text("purpose").notNull(), // 'verification', 'password_reset', etc.
+  email: text("email"),
+  phone: text("phone"),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const verificationCodeInsertSchema = createInsertSchema(verificationCodes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type VerificationCodeInsert = z.infer<typeof verificationCodeInsertSchema>;
+export type VerificationCode = typeof verificationCodes.$inferSelect;
+
+// Verification codes relations
+export const verificationCodesRelations = relations(verificationCodes, ({ one }) => ({
+  user: one(users, {
+    fields: [verificationCodes.userId],
+    references: [users.id],
+  }),
+}));

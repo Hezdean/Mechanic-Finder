@@ -5,7 +5,8 @@ import {
   bids, type Bid, type BidInsert,
   reviews, type Review, type ReviewInsert,
   messages, type Message, type MessageInsert,
-  transactions, type Transaction, type TransactionInsert
+  transactions, type Transaction, type TransactionInsert,
+  verificationCodes, type VerificationCode, type VerificationCodeInsert
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or } from "drizzle-orm";
@@ -65,6 +66,11 @@ export interface IStorage {
   listTransactionsByJobId(jobId: number): Promise<Transaction[]>;
   listTransactionsByUserId(userId: number): Promise<Transaction[]>;
   listTransactionsByMechanicId(mechanicId: number): Promise<Transaction[]>;
+  
+  // Verification code methods
+  createVerificationCode(verificationCode: VerificationCodeInsert): Promise<VerificationCode>;
+  getLatestVerificationCode(userId: number, type: string, purpose: string): Promise<VerificationCode | undefined>;
+  markVerificationCodeUsed(id: number): Promise<VerificationCode | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -75,6 +81,7 @@ export class MemStorage implements IStorage {
   private reviews: Map<number, Review>;
   private messages: Map<number, Message>;
   private transactions: Map<number, Transaction>;
+  private verificationCodes: Map<number, VerificationCode>;
   private currentIds: {
     users: number;
     mechanicProfiles: number;
@@ -83,6 +90,7 @@ export class MemStorage implements IStorage {
     reviews: number;
     messages: number;
     transactions: number;
+    verificationCodes: number;
   };
 
   constructor() {
@@ -93,6 +101,7 @@ export class MemStorage implements IStorage {
     this.reviews = new Map();
     this.messages = new Map();
     this.transactions = new Map();
+    this.verificationCodes = new Map();
     this.currentIds = {
       users: 1,
       mechanicProfiles: 1,
@@ -101,6 +110,7 @@ export class MemStorage implements IStorage {
       reviews: 1,
       messages: 1,
       transactions: 1,
+      verificationCodes: 1,
     };
 
     // Initialize data asynchronously
