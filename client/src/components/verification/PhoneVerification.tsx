@@ -1,81 +1,89 @@
-import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Phone, CheckCircle } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, Phone, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function PhoneVerification() {
-  const { user } = useAuth();
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const { toast } = useToast();
-  const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSending, setIsSending] = useState(false);
+  const queryClient = useQueryClient();
 
-  const handleSendOTP = async () => {
-    if (!user?.phone) {
-      toast({
-        title: "No phone number",
-        description: "Please add a phone number to your profile first.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsSending(true);
-    try {
-      await apiRequest('/api/verification/send-phone', {
-        method: 'POST'
-      });
+  const sendOtpMutation = useMutation({
+    mutationFn: (phone: string) => apiRequest('/api/verification/send-phone', {
+      method: 'POST',
+      body: JSON.stringify({ phone })
+    }),
+    onSuccess: () => {
+      setOtpSent(true);
       toast({
         title: "OTP sent",
-        description: "Please check your phone for the verification code."
+        description: "Please check your phone for the verification code.",
       });
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
-        title: "Error",
+        title: "Error sending OTP",
         description: error.message || "Failed to send OTP",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
-    setIsSending(false);
-  };
+  });
 
-  const handleVerifyOTP = async () => {
-    if (!otp.trim()) {
+  const verifyOtpMutation = useMutation({
+    mutationFn: (code: string) => apiRequest('/api/verification/verify-phone', {
+      method: 'POST',
+      body: JSON.stringify({ code: code.trim() })
+    }),
+    onSuccess: () => {
+      setIsVerified(true);
       toast({
-        title: "Error",
-        description: "Please enter the OTP",
-        variant: "destructive"
+        title: "Phone verified",
+        description: "Your phone number has been successfully verified!",
       });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await apiRequest('/api/verification/verify-phone', {
-        method: 'POST',
-        body: JSON.stringify({ code: otp.trim() })
-      });
-      toast({
-        title: "Phone verified successfully",
-        description: "Your phone number has been verified."
-      });
-      window.location.reload(); // Refresh to update user state
-    } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: (error: any) => {
       toast({
         title: "Verification failed",
         description: error.message || "Invalid or expired OTP",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
-    setIsLoading(false);
+  });
+
+  const handleSendOtp = () => {
+    if (!phoneNumber.trim()) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter your phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+    sendOtpMutation.mutate(phoneNumber);
   };
 
-  if (user?.phoneVerified) {
+  const handleVerifyOtp = () => {
+    if (!otp.trim()) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter the OTP",
+        variant: "destructive",
+      });
+      return;
+    }
+    verifyOtpMutation.mutate(otp);
+  };
+
+  if (isVerified) {
     return (
       <Card>
         <CardHeader>
@@ -84,23 +92,7 @@ export function PhoneVerification() {
             Phone Verified
           </CardTitle>
           <CardDescription>
-            Your phone number {user.phone} is verified.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  if (!user?.phone) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Phone className="h-5 w-5" />
-            Phone Verification
-          </CardTitle>
-          <CardDescription>
-            Add a phone number to your profile to enable phone verification.
+            Your phone number has been successfully verified.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -112,42 +104,86 @@ export function PhoneVerification() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Phone className="h-5 w-5" />
-          Verify Phone Number
+          Phone Verification
         </CardTitle>
         <CardDescription>
-          Verify your phone number {user.phone} to complete your account setup.
+          Verify your phone number to receive important notifications and enhance security.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Button 
-            onClick={handleSendOTP} 
-            disabled={isSending}
-            className="w-full"
-          >
-            {isSending ? "Sending..." : "Send OTP"}
-          </Button>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="otp">OTP Code</Label>
-          <Input
-            id="otp"
-            type="text"
-            placeholder="Enter 6-digit OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            maxLength={6}
-          />
-        </div>
-        
-        <Button 
-          onClick={handleVerifyOTP} 
-          disabled={isLoading || !otp.trim()}
-          className="w-full"
-        >
-          {isLoading ? "Verifying..." : "Verify Phone"}
-        </Button>
+        {!otpSent ? (
+          <div className="space-y-2">
+            <Input
+              type="tel"
+              placeholder="Enter your phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+            <Button 
+              onClick={handleSendOtp}
+              disabled={sendOtpMutation.isPending}
+              className="w-full"
+            >
+              {sendOtpMutation.isPending ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send OTP'
+              )}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Alert>
+              <AlertDescription>
+                OTP sent to {phoneNumber}. Please enter the code below.
+              </AlertDescription>
+            </Alert>
+            <Input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              maxLength={6}
+            />
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleVerifyOtp}
+                disabled={verifyOtpMutation.isPending || !otp.trim()}
+                className="flex-1"
+              >
+                {verifyOtpMutation.isPending ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  'Verify OTP'
+                )}
+              </Button>
+              <Button 
+                onClick={() => {
+                  setOtpSent(false);
+                  setOtp('');
+                }}
+                variant="outline"
+              >
+                Change Number
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {(sendOtpMutation.isError || verifyOtpMutation.isError) && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {sendOtpMutation.error?.message || verifyOtpMutation.error?.message || 
+               "An error occurred. Please try again."}
+            </AlertDescription>
+          </Alert>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,72 +1,77 @@
-import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Mail, CheckCircle } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, Mail, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function EmailVerification() {
-  const { user } = useAuth();
+  const [code, setCode] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
   const { toast } = useToast();
-  const [code, setCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSending, setIsSending] = useState(false);
+  const queryClient = useQueryClient();
 
-  const handleSendVerification = async () => {
-    setIsSending(true);
-    try {
-      await apiRequest('/api/verification/send-email', {
-        method: 'POST'
-      });
+  const sendEmailMutation = useMutation({
+    mutationFn: () => apiRequest('/api/verification/send-email', {
+      method: 'POST'
+    }),
+    onSuccess: () => {
       toast({
         title: "Verification email sent",
-        description: "Please check your email for the verification code."
+        description: "Please check your email for the verification code.",
       });
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
-        title: "Error",
+        title: "Error sending email",
         description: error.message || "Failed to send verification email",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
-    setIsSending(false);
-  };
+  });
 
-  const handleVerifyCode = async () => {
-    if (!code.trim()) {
+  const verifyEmailMutation = useMutation({
+    mutationFn: (code: string) => apiRequest('/api/verification/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ code: code.trim() })
+    }),
+    onSuccess: () => {
+      setIsVerified(true);
       toast({
-        title: "Error",
-        description: "Please enter the verification code",
-        variant: "destructive"
+        title: "Email verified",
+        description: "Your email has been successfully verified!",
       });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await apiRequest('/api/verification/verify-email', {
-        method: 'POST',
-        body: JSON.stringify({ code: code.trim() })
-      });
-      toast({
-        title: "Email verified successfully",
-        description: "Your email address has been verified."
-      });
-      window.location.reload(); // Refresh to update user state
-    } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: (error: any) => {
       toast({
         title: "Verification failed",
         description: error.message || "Invalid or expired verification code",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
-    setIsLoading(false);
+  });
+
+  const handleSendEmail = () => {
+    sendEmailMutation.mutate();
   };
 
-  if (user?.emailVerified) {
+  const handleVerifyEmail = () => {
+    if (!code.trim()) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter the verification code",
+        variant: "destructive",
+      });
+      return;
+    }
+    verifyEmailMutation.mutate(code);
+  };
+
+  if (isVerified) {
     return (
       <Card>
         <CardHeader>
@@ -75,7 +80,7 @@ export function EmailVerification() {
             Email Verified
           </CardTitle>
           <CardDescription>
-            Your email address {user.email} is verified.
+            Your email address has been successfully verified.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -87,42 +92,63 @@ export function EmailVerification() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
-          Verify Email Address
+          Email Verification
         </CardTitle>
         <CardDescription>
-          Verify your email address {user?.email} to complete your account setup.
+          Verify your email address to enhance your account security and unlock all features.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Button 
-            onClick={handleSendVerification} 
-            disabled={isSending}
+            onClick={handleSendEmail}
+            disabled={sendEmailMutation.isPending}
             className="w-full"
           >
-            {isSending ? "Sending..." : "Send Verification Email"}
+            {sendEmailMutation.isPending ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              'Send Verification Email'
+            )}
           </Button>
         </div>
-        
+
         <div className="space-y-2">
-          <Label htmlFor="code">Verification Code</Label>
           <Input
-            id="code"
             type="text"
-            placeholder="Enter 6-digit code"
+            placeholder="Enter verification code"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             maxLength={6}
           />
+          <Button 
+            onClick={handleVerifyEmail}
+            disabled={verifyEmailMutation.isPending || !code.trim()}
+            variant="outline"
+            className="w-full"
+          >
+            {verifyEmailMutation.isPending ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              'Verify Email'
+            )}
+          </Button>
         </div>
-        
-        <Button 
-          onClick={handleVerifyCode} 
-          disabled={isLoading || !code.trim()}
-          className="w-full"
-        >
-          {isLoading ? "Verifying..." : "Verify Email"}
-        </Button>
+
+        {(sendEmailMutation.isError || verifyEmailMutation.isError) && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {sendEmailMutation.error?.message || verifyEmailMutation.error?.message || 
+               "An error occurred. Please try again."}
+            </AlertDescription>
+          </Alert>
+        )}
       </CardContent>
     </Card>
   );
