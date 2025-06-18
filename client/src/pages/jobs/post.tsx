@@ -74,7 +74,10 @@ const PostJob = () => {
 
   // Create job mutation
   const createJobMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/jobs', 'POST', data),
+    mutationFn: (data: any) => apiRequest('/api/jobs', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
       toast({

@@ -59,7 +59,10 @@ const BidForm = ({ isOpen, onClose, jobId, mechanicId }: BidFormProps) => {
 
   const placeBidMutation = useMutation({
     mutationFn: (data: BidFormValues & { jobId: number; mechanicId: number }) =>
-      apiRequest("/api/bids", "POST", data),
+      apiRequest("/api/bids", {
+        method: "POST",
+        body: JSON.stringify(data)
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/jobs/${jobId}`] });
       toast({
