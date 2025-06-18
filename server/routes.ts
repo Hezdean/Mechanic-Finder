@@ -176,6 +176,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error changing password", error });
     }
   });
+
+  // Verification endpoints
+  app.post('/api/verification/send-email', authenticateToken, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user!.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.emailVerified) {
+        return res.status(400).json({ message: "Email already verified" });
+      }
+
+      const success = await createEmailVerification(user.id, user.email, user.firstName);
+      if (success) {
+        res.json({ message: "Verification email sent successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to send verification email" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error sending verification email", error });
+    }
+  });
+
+  app.post('/api/verification/verify-email', authenticateToken, async (req, res) => {
+    try {
+      const { code } = req.body;
+      if (!code) {
+        return res.status(400).json({ message: "Verification code is required" });
+      }
+
+      const success = await verifyEmailCode(req.user!.userId, code);
+      if (success) {
+        res.json({ message: "Email verified successfully" });
+      } else {
+        res.status(400).json({ message: "Invalid or expired verification code" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error verifying email", error });
+    }
+  });
+
+  app.post('/api/verification/send-phone', authenticateToken, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user!.userId);
+      if (!user || !user.phone) {
+        return res.status(400).json({ message: "User phone number not found" });
+      }
+
+      if (user.phoneVerified) {
+        return res.status(400).json({ message: "Phone already verified" });
+      }
+
+      const success = await createPhoneVerification(user.id, user.phone);
+      if (success) {
+        res.json({ message: "OTP sent successfully to your phone" });
+      } else {
+        res.status(500).json({ message: "Failed to send OTP" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error sending OTP", error });
+    }
+  });
+
+  app.post('/api/verification/verify-phone', authenticateToken, async (req, res) => {
+    try {
+      const { code } = req.body;
+      if (!code) {
+        return res.status(400).json({ message: "OTP is required" });
+      }
+
+      const success = await verifyPhoneOTP(req.user!.userId, code);
+      if (success) {
+        res.json({ message: "Phone verified successfully" });
+      } else {
+        res.status(400).json({ message: "Invalid or expired OTP" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error verifying phone", error });
+    }
+  });
+
+  app.post('/api/verification/resend', authenticateToken, async (req, res) => {
+    try {
+      const { type } = req.body; // 'email' or 'phone'
+      if (!type || !['email', 'phone'].includes(type)) {
+        return res.status(400).json({ message: "Type must be 'email' or 'phone'" });
+      }
+
+      const success = await resendVerification(req.user!.userId, type);
+      if (success) {
+        const message = type === 'email' ? 
+          "Verification email resent successfully" : 
+          "OTP resent successfully to your phone";
+        res.json({ message });
+      } else {
+        res.status(500).json({ message: `Failed to resend ${type} verification` });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error resending verification", error });
+    }
+  });
   
   // User routes
   app.post('/api/users', validateRequest(userInsertSchema), async (req, res) => {

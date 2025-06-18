@@ -11,7 +11,10 @@ interface User {
   firstName: string;
   lastName: string;
   role: string;
+  phone?: string;
   profilePicture?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
 }
 
 interface LoginCredentials {

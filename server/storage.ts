@@ -681,6 +681,9 @@ export class MemStorage implements IStorage {
     const newCode: VerificationCode = { 
       ...verificationCode, 
       id, 
+      userId: verificationCode.userId || 0,
+      email: verificationCode.email || null,
+      phone: verificationCode.phone || null,
       usedAt: null,
       createdAt: now 
     };
