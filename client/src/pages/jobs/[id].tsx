@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import BidForm from "@/components/job/BidForm";
 import { PaymentForm } from "@/components/PaymentForm";
+import { SkeletonJobDetails } from "@/components/ui/skeleton-job-details";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -118,21 +119,7 @@ const JobDetails = () => {
   const hasBid = job?.bids?.some((bid: any) => bid.mechanicId === user?.id);
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <div className="animate-pulse">
-          <div className="h-8 bg-neutral-200 rounded w-1/3 mx-auto mb-4"></div>
-          <div className="h-4 bg-neutral-200 rounded w-1/4 mx-auto mb-12"></div>
-          <div className="max-w-3xl mx-auto">
-            <div className="h-64 bg-neutral-200 rounded mb-8"></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="h-32 bg-neutral-200 rounded"></div>
-              <div className="h-32 bg-neutral-200 rounded"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <SkeletonJobDetails />;
   }
 
   if (isError || !job) {

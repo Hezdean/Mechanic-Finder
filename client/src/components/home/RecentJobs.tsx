@@ -6,7 +6,6 @@ import { SkeletonJobCard } from "@/components/ui/skeleton-job-card";
 import { useAuth } from "@/hooks/use-auth";
 
 
-
 const RecentJobs = () => {
   const { user, isAuthenticated } = useAuth();
   const { data: jobs, isLoading } = useQuery({
