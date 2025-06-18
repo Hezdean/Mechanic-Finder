@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import JobCard from "@/components/job/JobCard";
+import { SkeletonJobCardCompact } from "@/components/ui/skeleton-job-card";
 import { PlusCircle, Filter, Search } from "lucide-react";
 
 const Jobs = () => {

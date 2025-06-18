@@ -2,31 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import JobCard from "@/components/job/JobCard";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonJobCard } from "@/components/ui/skeleton-job-card";
 import { useAuth } from "@/hooks/use-auth";
 
-const SkeletonJobCard = () => (
-  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-    <div className="p-6">
-      <div className="flex justify-between items-start">
-        <Skeleton className="h-6 w-40" />
-        <Skeleton className="h-6 w-16 rounded-full" />
-      </div>
-      <div className="mt-2 space-y-2">
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-4 w-36" />
-      </div>
-      <Skeleton className="mt-4 h-4 w-full" />
-      <Skeleton className="mt-2 h-4 w-4/5" />
-      <div className="mt-4 pt-4 border-t border-neutral-200">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-10 w-28" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
+
 
 const RecentJobs = () => {
   const { user, isAuthenticated } = useAuth();
