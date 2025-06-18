@@ -673,6 +673,37 @@ export class MemStorage implements IStorage {
       };
     });
   }
+
+  // Verification code methods
+  async createVerificationCode(verificationCode: VerificationCodeInsert): Promise<VerificationCode> {
+    const id = this.currentIds.verificationCodes++;
+    const now = new Date();
+    const newCode: VerificationCode = { 
+      ...verificationCode, 
+      id, 
+      usedAt: null,
+      createdAt: now 
+    };
+    this.verificationCodes.set(id, newCode);
+    return newCode;
+  }
+
+  async getLatestVerificationCode(userId: number, type: string, purpose: string): Promise<VerificationCode | undefined> {
+    const codes = Array.from(this.verificationCodes.values())
+      .filter(code => code.userId === userId && code.type === type && code.purpose === purpose)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+    
+    return codes[0];
+  }
+
+  async markVerificationCodeUsed(id: number): Promise<VerificationCode | undefined> {
+    const code = this.verificationCodes.get(id);
+    if (!code) return undefined;
+    
+    const updatedCode = { ...code, usedAt: new Date() };
+    this.verificationCodes.set(id, updatedCode);
+    return updatedCode;
+  }
 }
 
 // Database implementation
@@ -1004,6 +1035,40 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .where(eq(transactions.mechanicId, mechanicId))
       .orderBy(transactions.createdAt);
+  }
+
+  // Verification code methods
+  async createVerificationCode(verificationCode: VerificationCodeInsert): Promise<VerificationCode> {
+    const [newCode] = await db
+      .insert(verificationCodes)
+      .values(verificationCode)
+      .returning();
+    return newCode;
+  }
+
+  async getLatestVerificationCode(userId: number, type: string, purpose: string): Promise<VerificationCode | undefined> {
+    const [code] = await db
+      .select()
+      .from(verificationCodes)
+      .where(
+        and(
+          eq(verificationCodes.userId, userId),
+          eq(verificationCodes.type, type),
+          eq(verificationCodes.purpose, purpose)
+        )
+      )
+      .orderBy(verificationCodes.createdAt)
+      .limit(1);
+    return code || undefined;
+  }
+
+  async markVerificationCodeUsed(id: number): Promise<VerificationCode | undefined> {
+    const [updatedCode] = await db
+      .update(verificationCodes)
+      .set({ usedAt: new Date() })
+      .where(eq(verificationCodes.id, id))
+      .returning();
+    return updatedCode || undefined;
   }
 }
 
