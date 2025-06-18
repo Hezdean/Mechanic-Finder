@@ -340,7 +340,6 @@ export class MemStorage implements IStorage {
     // Hash the password before storing
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(user.password, saltRounds);
-    console.log('Creating user with hashed password:', { username: user.username, originalLength: user.password.length, hashedLength: hashedPassword.length });
     
     const newUser: User = { 
       id, 
