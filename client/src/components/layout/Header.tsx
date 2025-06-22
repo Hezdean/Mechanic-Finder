@@ -48,49 +48,7 @@ const Header = () => {
                 </a>
               </Link>
             </div>
-            <nav className="hidden md:ml-8 md:flex md:space-x-8">
-              <Link href="/">
-                <a className={`${location === "/" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                  Home
-                </a>
-              </Link>
-              {(!user || user.role === "user") && (
-                <Link href="/mechanics">
-                  <a className={`${location.startsWith("/mechanics") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                    Find Mechanics
-                  </a>
-                </Link>
-              )}
-              {user?.role === "mechanic" && (
-                <Link href="/jobs">
-                  <a className={`${location.startsWith("/jobs") && location !== "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                    Browse Jobs
-                  </a>
-                </Link>
-              )}
-              {(!user || user.role === "user") && (
-                <Link href="/jobs/post">
-                  <a className={`${location === "/jobs/post" ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                    Post a Job
-                  </a>
-                </Link>
-              )}
-              <Link href="/diagnostics">
-                <a className={`${location.startsWith("/diagnostics") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                  AI Help
-                </a>
-              </Link>
-              <Link href="/booking">
-                <a className={`${location.startsWith("/booking") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
-                  Book Now
-                </a>
-              </Link>
-              <Link href="/emergency">
-                <a className={`${location.startsWith("/emergency") ? "text-red-600 font-medium border-b-2 border-red-600" : "text-red-600 hover:text-red-700 font-medium"} px-1 pt-5 pb-3`}>
-                  Emergency
-                </a>
-              </Link>
-            </nav>
+
           </div>
           <div className="flex items-center">
             {isAuthenticated ? (

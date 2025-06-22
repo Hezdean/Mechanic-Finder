@@ -1,29 +1,27 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { Helmet } from "react-helmet";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Search, 
-  MapPin, 
-  Star, 
-  Clock, 
-  Shield, 
-  Wrench, 
-  Car, 
-  Users,
-  CheckCircle,
-  ArrowRight,
-  Phone,
-  Mail
-} from "lucide-react";
-import { formatCurrency, getFullName } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
+import { useEffect } from "react";
+import HeroSection from "@/components/home/HeroSection";
+import HowItWorks from "@/components/home/HowItWorks";
+import FeaturedMechanics from "@/components/home/FeaturedMechanics";
+import RecentJobs from "@/components/home/RecentJobs";
+import Testimonials from "@/components/home/Testimonials";
+import PostJobSection from "@/components/home/PostJobSection";
+import JoinCTA from "@/components/home/JoinCTA";
 
 const Home = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLocation("/dashboard");
+    }
+  }, [isAuthenticated, setLocation]);
+
+  if (isAuthenticated) {
+    return null;
+  }
   
   // Fetch mechanics for the "Choose Your Mechanic" section
   const { data: mechanicsData = [], isLoading } = useQuery({

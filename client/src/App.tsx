@@ -45,6 +45,7 @@ function Router() {
         <Route path="/dashboard/admin" component={AdminDashboard} />
         <Route path="/dashboard/mechanic" component={MechanicDashboard} />
         <Route path="/dashboard/user" component={UserDashboard} />
+        <Route path="/dashboard" component={DashboardPage} />
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/post" component={PostJob} />
         <Route path="/jobs/:id" component={JobDetails} />
