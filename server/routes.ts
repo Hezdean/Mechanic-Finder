@@ -279,6 +279,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // AI Diagnostics route
+  app.post("/api/diagnostics", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const { getDiagnostics } = await import("./ai-diagnostics");
+      const result = await getDiagnostics(req.body);
+      res.json(result);
+    } catch (error) {
+      console.error("Diagnostics error:", error);
+      res.status(500).json({ message: "Failed to process diagnostics" });
+    }
+  });
+
+  // Emergency assistance route
+  app.post("/api/emergency", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const { latitude, longitude, description, vehicle } = req.body;
+      
+      const emergencyJob = await storage.createJob({
+        userId: req.user!.userId,
+        title: "EMERGENCY: Vehicle Breakdown",
+        description: description || "Emergency breakdown assistance needed",
+        vehicle: vehicle || "Emergency situation",
+        location: `Emergency location: ${latitude}, ${longitude}`,
+        isEmergency: true,
+      });
+
+      res.json({ 
+        success: true, 
+        jobId: emergencyJob.id,
+        message: "Emergency request sent to nearby mechanics" 
+      });
+    } catch (error) {
+      console.error("Emergency request error:", error);
+      res.status(500).json({ message: "Failed to process emergency request" });
+    }
+  });
+
+  // Nearby mechanics route
+  app.get("/api/mechanics/nearby", authenticateToken, async (req: Request, res: Response) => {
+    try {
+      const mechanics = await storage.listMechanicProfiles();
+      const availableMechanics = mechanics.filter(m => m.isAvailable !== false);
+      res.json(availableMechanics);
+    } catch (error) {
+      console.error("Error fetching nearby mechanics:", error);
+      res.status(500).json({ message: "Failed to fetch mechanics" });
+    }
+  });
+
   // User routes
   app.post('/api/users', validateRequest(userInsertSchema), async (req, res) => {
     try {

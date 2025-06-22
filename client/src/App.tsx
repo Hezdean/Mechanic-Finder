@@ -23,6 +23,10 @@ import MechanicProfile from "@/pages/mechanics/[id]";
 import Messages from "@/pages/messages/index";
 import TransactionHistory from "@/pages/transaction-history";
 import Verification from "@/pages/verification";
+import DiagnosticsPage from "@/pages/diagnostics";
+import EmergencyPage from "@/pages/emergency";
+import BookingPage from "@/pages/booking";
+import ServiceHistoryPage from "@/pages/service-history";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -49,6 +53,10 @@ function Router() {
         <Route path="/messages" component={Messages} />
         <Route path="/transactions" component={TransactionHistory} />
         <Route path="/verification" component={Verification} />
+        <Route path="/diagnostics" component={DiagnosticsPage} />
+        <Route path="/emergency" component={EmergencyPage} />
+        <Route path="/booking" component={BookingPage} />
+        <Route path="/service-history" component={ServiceHistoryPage} />
         <Route component={NotFound} />
       </Switch>
       <Footer />
