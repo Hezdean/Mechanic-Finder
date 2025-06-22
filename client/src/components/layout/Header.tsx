@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MobileMenu from "./MobileMenu";
-import { Menu, User, LogOut, Settings, Drill, Car, MessageSquare, Receipt } from "lucide-react";
+import { Menu, User, LogOut, Settings, Drill, Car, MessageSquare, Receipt, History } from "lucide-react";
 
 const Header = () => {
   const [location] = useLocation();
@@ -75,6 +75,21 @@ const Header = () => {
                   </a>
                 </Link>
               )}
+              <Link href="/diagnostics">
+                <a className={`${location.startsWith("/diagnostics") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
+                  AI Help
+                </a>
+              </Link>
+              <Link href="/booking">
+                <a className={`${location.startsWith("/booking") ? "text-primary font-medium border-b-2 border-primary" : "text-foreground hover:text-primary font-medium"} px-1 pt-5 pb-3`}>
+                  Book Now
+                </a>
+              </Link>
+              <Link href="/emergency">
+                <a className={`${location.startsWith("/emergency") ? "text-red-600 font-medium border-b-2 border-red-600" : "text-red-600 hover:text-red-700 font-medium"} px-1 pt-5 pb-3`}>
+                  Emergency
+                </a>
+              </Link>
             </nav>
           </div>
           <div className="flex items-center">
@@ -123,6 +138,14 @@ const Header = () => {
                         </Link>
                       </DropdownMenuItem>
                     )}
+                    <DropdownMenuItem asChild>
+                      <Link href="/service-history">
+                        <a className="flex cursor-pointer items-center">
+                          <History className="mr-2 h-4 w-4" />
+                          <span>Service History</span>
+                        </a>
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/messages">
                         <a className="flex cursor-pointer items-center">
