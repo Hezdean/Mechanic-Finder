@@ -22,30 +22,19 @@ const Home = () => {
   if (isAuthenticated) {
     return null;
   }
-  
-  // Fetch mechanics for the "Choose Your Mechanic" section
-  const { data: mechanicsData = [], isLoading } = useQuery({
-    queryKey: ['/api/mechanic-profiles'],
-  });
-
-  // Type the mechanics data properly
-  const mechanics = mechanicsData as any[];
-
-  // Filter mechanics based on search
-  const filteredMechanics = mechanics.filter((mechanic: any) => 
-    mechanic.specializations?.some((spec: string) => 
-      spec.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || searchTerm === ""
-  );
 
   return (
-    <>
-      <Helmet>
-        <title>Mechanic Finder - Connect with Trusted Auto Repair Experts</title>
-        <meta name="description" content="Find verified mechanics in your area or browse expert profiles. Get quality auto repairs with transparent pricing and trusted professionals." />
-      </Helmet>
-      
-      <main className="min-h-screen">
+    <div className="min-h-screen">
+      <HeroSection />
+      <HowItWorks />
+      <FeaturedMechanics />
+      <PostJobSection />
+      <RecentJobs />
+      <Testimonials />
+      <JoinCTA />
+    </div>
+  );
+};
         {/* New Hero Section */}
         <section className="relative bg-gradient-to-br from-primary/5 via-accent/5 to-primary/10 py-20">
           <div className="container mx-auto px-4">

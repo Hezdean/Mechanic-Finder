@@ -29,6 +29,7 @@ import BookingPage from "@/pages/booking";
 import ServiceHistoryPage from "@/pages/service-history";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import DashboardPage from "@/pages/dashboard";
 
 function Router() {
   return (
