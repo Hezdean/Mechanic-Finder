@@ -37,13 +37,13 @@ const JoinCTA = () => {
               </>
             ) : (
               <>
-                <Link href="/register?role=mechanic">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white text-primary-600 hover:bg-neutral-100 border-white">
+                <Link href="/auth/register?role=mechanic">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto">
                     Join as a Mechanic
                   </Button>
                 </Link>
-                <Link href="/register">
-                  <Button size="lg" className="w-full sm:w-auto bg-secondary-500 hover:bg-secondary-600 text-white">
+                <Link href="/auth/register">
+                  <Button size="lg" className="w-full sm:w-auto">
                     Sign Up as a Car Owner
                   </Button>
                 </Link>

@@ -224,7 +224,7 @@ const Register = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-secondary-500 hover:bg-secondary-600 mt-6" 
+                  className="w-full mt-6" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -242,8 +242,8 @@ const Register = () => {
           <CardFooter className="flex flex-col">
             <div className="text-center text-sm mt-2">
               <span className="text-muted-foreground">Already have an account? </span>
-              <Link href="/login">
-                <a className="text-primary-500 hover:underline">Sign in</a>
+              <Link href="/auth/login">
+                <a className="text-primary hover:underline">Sign in</a>
               </Link>
             </div>
           </CardFooter>
