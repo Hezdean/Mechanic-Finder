@@ -63,28 +63,22 @@ const DashboardPage = () => {
 
   const mechanicFeatures = [
     {
-      icon: <Briefcase className="h-12 w-12" />,
+      icon: Briefcase,
       title: "Available Jobs",
       description: "Browse and bid on jobs",
-      href: "/jobs",
-      bgColor: "bg-blue-600 hover:bg-blue-700",
-      iconBg: "bg-orange-400"
+      href: "/jobs"
     },
     {
-      icon: <Settings className="h-12 w-12" />,
+      icon: Settings,
       title: "Job History",
       description: "View completed work",
-      href: "/dashboard/mechanic/history",
-      bgColor: "bg-blue-600 hover:bg-blue-700",
-      iconBg: "bg-orange-400"
+      href: "/dashboard/mechanic/history"
     },
     {
-      icon: <DollarSign className="h-12 w-12" />,
+      icon: DollarSign,
       title: "Earnings",
       description: "Track your income",
-      href: "/transactions",
-      bgColor: "bg-blue-600 hover:bg-blue-700",
-      iconBg: "bg-orange-400"
+      href: "/transactions"
     }
   ];
 

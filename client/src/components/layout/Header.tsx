@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MobileMenu from "./MobileMenu";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Menu, User, LogOut, Settings, Drill, Car, MessageSquare, Receipt, History } from "lucide-react";
 
 const Header = () => {
@@ -50,7 +51,8 @@ const Header = () => {
             </div>
 
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            {/* Add ThemeToggle import at top */}
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link href="/messages">

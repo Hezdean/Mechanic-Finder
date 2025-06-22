@@ -63,6 +63,7 @@ function Router() {
         <Route path="/service-history" component={ServiceHistoryPage} />
         <Route component={NotFound} />
       </Switch>
+      <FloatingActionMenu />
       <Footer />
     </>
   );
