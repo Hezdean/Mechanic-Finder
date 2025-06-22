@@ -33,11 +33,11 @@ export default function FloatingActionMenu() {
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {isOpen && (
-        <Card className="mb-3 bg-blue-800/95 border-blue-400/30 backdrop-blur-sm shadow-xl">
+        <Card className="mb-3 bg-card/95 border backdrop-blur-sm shadow-xl">
           <div className="p-3 space-y-2">
             <Button
               onClick={handlePostJob}
-              className="w-full justify-start bg-orange-400 hover:bg-orange-500 text-white"
+              className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground"
               size="sm"
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -45,7 +45,7 @@ export default function FloatingActionMenu() {
             </Button>
             <Button
               onClick={handleEmergency}
-              className="w-full justify-start bg-red-500 hover:bg-red-600 text-white"
+              className="w-full justify-start bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               size="sm"
             >
               <AlertTriangle className="mr-2 h-4 w-4" />
@@ -59,15 +59,15 @@ export default function FloatingActionMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className={`h-14 w-14 rounded-full shadow-lg transition-all duration-200 ${
           isOpen 
-            ? "bg-slate-700 hover:bg-slate-600 rotate-180" 
-            : "bg-orange-400 hover:bg-orange-500"
+            ? "bg-muted hover:bg-muted/80 rotate-180" 
+            : "bg-primary hover:bg-primary/90"
         }`}
         size="icon"
       >
         {isOpen ? (
-          <X className="h-6 w-6 text-white" />
+          <X className="h-6 w-6 text-primary-foreground" />
         ) : (
-          <ChevronUp className="h-6 w-6 text-white" />
+          <ChevronUp className="h-6 w-6 text-primary-foreground" />
         )}
       </Button>
     </div>
