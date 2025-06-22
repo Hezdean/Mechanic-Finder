@@ -113,6 +113,7 @@ export const jobs = pgTable("jobs", {
   budget: integer("budget"),
   assignedMechanicId: integer("assigned_mechanic_id").references(() => users.id),
   isEmergency: boolean("is_emergency").default(false),
+  urgencyLevel: text("urgency_level").default("medium"), // low, medium, high, emergency
   aiDiagnostics: text("ai_diagnostics"),
 });
 
@@ -223,6 +224,7 @@ export const messages = pgTable("messages", {
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   jobId: integer("job_id").references(() => jobs.id),
+  isEmergencyAlert: boolean("is_emergency_alert").default(false),
 });
 
 export const messageInsertSchema = createInsertSchema(messages).omit({

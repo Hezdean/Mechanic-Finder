@@ -296,19 +296,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { latitude, longitude, description, vehicle } = req.body;
       
+      // Create emergency job with high priority
       const emergencyJob = await storage.createJob({
         userId: req.user!.userId,
-        title: "EMERGENCY: Vehicle Breakdown",
+        title: "🚨 EMERGENCY: Vehicle Breakdown",
         description: description || "Emergency breakdown assistance needed",
         vehicle: vehicle || "Emergency situation",
         location: `Emergency location: ${latitude}, ${longitude}`,
         isEmergency: true,
+        urgencyLevel: "emergency",
+        budget: "Emergency - Negotiable"
       });
+
+      // Get all available mechanics for immediate notification
+      const mechanics = await storage.listMechanicProfiles();
+      const availableMechanics = mechanics.filter(m => m.isAvailable !== false);
+      
+      // Create emergency messages to notify all available mechanics
+      const emergencyMessages = availableMechanics.map(mechanic => ({
+        senderId: req.user!.userId,
+        receiverId: mechanic.userId,
+        jobId: emergencyJob.id,
+        content: `🚨 EMERGENCY ALERT: Vehicle breakdown at coordinates ${latitude}, ${longitude}. ${description || 'Immediate assistance needed'}. This is a priority emergency request.`,
+        isEmergencyAlert: true
+      }));
+
+      // Send emergency notifications to all available mechanics
+      for (const messageData of emergencyMessages) {
+        await storage.createMessage(messageData);
+      }
 
       res.json({ 
         success: true, 
         jobId: emergencyJob.id,
-        message: "Emergency request sent to nearby mechanics" 
+        mechanicsNotified: availableMechanics.length,
+        message: `Emergency alert sent to ${availableMechanics.length} available mechanics` 
       });
     } catch (error) {
       console.error("Emergency request error:", error);
