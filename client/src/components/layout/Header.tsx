@@ -80,44 +80,44 @@ const Header = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href={getDashboardLink()}>
-                        <a className="flex cursor-pointer items-center">
+                        <div className="flex cursor-pointer items-center">
                           <User className="mr-2 h-4 w-4" />
                           <span>Dashboard</span>
-                        </a>
+                        </div>
                       </Link>
                     </DropdownMenuItem>
                     {user?.role === "user" && (
                       <DropdownMenuItem asChild>
                         <Link href="/jobs/post">
-                          <a className="flex cursor-pointer items-center">
+                          <div className="flex cursor-pointer items-center">
                             <Car className="mr-2 h-4 w-4" />
                             <span>Post a Job</span>
-                          </a>
+                          </div>
                         </Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem asChild>
                       <Link href="/service-history">
-                        <a className="flex cursor-pointer items-center">
+                        <div className="flex cursor-pointer items-center">
                           <History className="mr-2 h-4 w-4" />
                           <span>Service History</span>
-                        </a>
+                        </div>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/messages">
-                        <a className="flex cursor-pointer items-center">
+                        <div className="flex cursor-pointer items-center">
                           <MessageSquare className="mr-2 h-4 w-4" />
                           <span>Messages</span>
-                        </a>
+                        </div>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/transactions">
-                        <a className="flex cursor-pointer items-center">
+                        <div className="flex cursor-pointer items-center">
                           <Receipt className="mr-2 h-4 w-4" />
                           <span>Transaction History</span>
-                        </a>
+                        </div>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
