@@ -36,15 +36,15 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-gradient-to-r from-slate-900 to-blue-900 shadow-lg border-b border-blue-400/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/">
+              <Link href={user ? "/dashboard" : "/"}>
                 <a className="flex items-center">
-                  <Drill className="h-8 w-auto text-primary" />
-                  <span className="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-accent text-transparent bg-clip-text">Mechanic Finder</span>
+                  <Drill className="h-8 w-auto text-orange-400" />
+                  <span className="ml-2 text-xl font-bold text-white">MechConnect</span>
                 </a>
               </Link>
             </div>
