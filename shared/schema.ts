@@ -435,8 +435,3 @@ export const mechanicAnalyticsInsertSchema = createInsertSchema(mechanicAnalytic
 });
 export type MechanicAnalyticsInsert = z.infer<typeof mechanicAnalyticsInsertSchema>;
 export type MechanicAnalytics = typeof mechanicAnalytics.$inferSelect;
-  user: one(users, {
-    fields: [verificationCodes.userId],
-    references: [users.id],
-  }),
-}));
