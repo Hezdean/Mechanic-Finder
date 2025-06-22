@@ -30,10 +30,10 @@ interface DiagnosticResponse {
 }
 
 const urgencyColors = {
-  low: 'bg-green-100 text-green-800 border-green-200',
-  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  high: 'bg-orange-100 text-orange-800 border-orange-200',
-  emergency: 'bg-red-100 text-red-800 border-red-200'
+  low: 'bg-green-50 text-green-700 border-green-200',
+  medium: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  high: 'bg-orange-50 text-orange-700 border-orange-200',
+  emergency: 'bg-red-50 text-red-700 border-red-200'
 };
 
 const urgencyIcons = {
@@ -208,7 +208,7 @@ export default function AIChatbot() {
               <ul className="space-y-1">
                 {diagnosis.recommendedActions.map((action, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     {action}
                   </li>
                 ))}
@@ -216,11 +216,11 @@ export default function AIChatbot() {
             </div>
 
             {/* Cost Estimate */}
-            <div className="flex items-center gap-2 p-4 bg-neutral-50 rounded-lg">
-              <DollarSign className="h-5 w-5 text-green-600" />
+            <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg">
+              <DollarSign className="h-5 w-5 text-primary" />
               <div>
                 <span className="font-medium">Estimated Cost: </span>
-                <span className="text-green-600 font-semibold">{diagnosis.estimatedCost}</span>
+                <span className="text-primary font-semibold">{diagnosis.estimatedCost}</span>
               </div>
             </div>
 
