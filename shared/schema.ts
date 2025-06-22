@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -70,6 +70,10 @@ export const mechanicProfiles = pgTable("mechanic_profiles", {
   verificationDocuments: text("verification_documents").array(),
   rating: integer("rating").default(0),
   reviewCount: integer("review_count").default(0),
+  currentLatitude: decimal("current_latitude", { precision: 10, scale: 8 }),
+  currentLongitude: decimal("current_longitude", { precision: 11, scale: 8 }),
+  isAvailable: boolean("is_available").default(true),
+  availabilitySchedule: text("availability_schedule"),
 });
 
 export const mechanicProfileInsertSchema = createInsertSchema(mechanicProfiles).omit({
@@ -98,13 +102,18 @@ export const jobs = pgTable("jobs", {
   description: text("description").notNull(),
   vehicle: text("vehicle").notNull(),
   location: text("location").notNull(),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
   status: text("status").notNull().default("open"), // open, in_progress, completed, canceled
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   photos: text("photos").array(),
+  audioFiles: text("audio_files").array(),
   preferredDate: timestamp("preferred_date"),
   budget: integer("budget"),
   assignedMechanicId: integer("assigned_mechanic_id").references(() => users.id),
+  isEmergency: boolean("is_emergency").default(false),
+  aiDiagnostics: text("ai_diagnostics"),
 });
 
 export const jobInsertSchema = createInsertSchema(jobs).omit({
