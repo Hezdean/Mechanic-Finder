@@ -30,6 +30,7 @@ import ServiceHistoryPage from "@/pages/service-history";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import DashboardPage from "@/pages/dashboard";
+import FloatingActionMenu from "@/components/ui/FloatingActionMenu";
 
 function Router() {
   return (
