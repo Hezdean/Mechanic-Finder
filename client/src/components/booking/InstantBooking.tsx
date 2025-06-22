@@ -23,8 +23,7 @@ import { format, addHours, startOfToday } from "date-fns";
 
 interface Mechanic {
   id: number;
-  firstName: string;
-  lastName: string;
+  userId: number;
   rating: number;
   reviewCount: number;
   hourlyRate: number;
@@ -32,6 +31,7 @@ interface Mechanic {
   currentLatitude: number;
   currentLongitude: number;
   specializations: string[];
+  yearsOfExperience: number;
   distance?: number;
 }
 
@@ -228,7 +228,7 @@ export default function InstantBooking() {
                     <div className="flex items-start gap-3">
                       <Avatar>
                         <AvatarFallback>
-                          {mechanic.firstName[0]}{mechanic.lastName[0]}
+                          {mechanic.userId.toString().slice(-2).padStart(2, '0')}
                         </AvatarFallback>
                       </Avatar>
                       
@@ -236,7 +236,7 @@ export default function InstantBooking() {
                         <div className="flex items-start justify-between">
                           <div>
                             <h4 className="font-semibold truncate">
-                              {mechanic.firstName} {mechanic.lastName}
+                              Mechanic #{mechanic.userId}
                             </h4>
                             <div className="flex items-center gap-1 mt-1">
                               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
@@ -301,7 +301,7 @@ export default function InstantBooking() {
                 <CheckCircle className="h-6 w-6 text-green-600" />
                 <div>
                   <p className="font-semibold">
-                    Booking with {selectedMechanic.firstName} {selectedMechanic.lastName}
+                    Booking with Mechanic #{selectedMechanic.userId}
                   </p>
                   <p className="text-sm text-neutral-600">
                     {format(selectedDate, 'MMM dd, yyyy')} at {selectedTime} ({duration} minutes)
