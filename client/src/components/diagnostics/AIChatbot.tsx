@@ -16,7 +16,9 @@ import {
   CheckCircle, 
   Clock,
   Wrench,
-  DollarSign
+  DollarSign,
+  Car,
+  Send
 } from "lucide-react";
 
 interface DiagnosticResponse {
