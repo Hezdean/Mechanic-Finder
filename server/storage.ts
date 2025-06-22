@@ -71,6 +71,26 @@ export interface IStorage {
   createVerificationCode(verificationCode: VerificationCodeInsert): Promise<VerificationCode>;
   getLatestVerificationCode(userId: number, type: string, purpose: string): Promise<VerificationCode | undefined>;
   markVerificationCodeUsed(id: number): Promise<VerificationCode | undefined>;
+  
+  // New methods for enhanced features
+  // Service history methods
+  createServiceHistory(serviceHistory: ServiceHistoryInsert): Promise<ServiceHistory>;
+  listServiceHistoryByUserId(userId: number): Promise<ServiceHistory[]>;
+  
+  // Inventory methods
+  createInventoryItem(inventory: InventoryInsert): Promise<Inventory>;
+  listInventoryByMechanicId(mechanicId: number): Promise<Inventory[]>;
+  updateInventoryItem(id: number, inventory: Partial<Inventory>): Promise<Inventory | undefined>;
+  
+  // Booking methods
+  createBooking(booking: BookingInsert): Promise<Booking>;
+  listBookingsByUserId(userId: number): Promise<Booking[]>;
+  listBookingsByMechanicId(mechanicId: number): Promise<Booking[]>;
+  updateBooking(id: number, booking: Partial<Booking>): Promise<Booking | undefined>;
+  
+  // Analytics methods
+  getMechanicAnalytics(mechanicId: number): Promise<MechanicAnalytics[]>;
+  updateMechanicAnalytics(mechanicId: number, analytics: Partial<MechanicAnalytics>): Promise<void>;
 }
 
 export class MemStorage implements IStorage {

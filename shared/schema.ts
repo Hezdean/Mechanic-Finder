@@ -318,8 +318,123 @@ export const verificationCodeInsertSchema = createInsertSchema(verificationCodes
 export type VerificationCodeInsert = z.infer<typeof verificationCodeInsertSchema>;
 export type VerificationCode = typeof verificationCodes.$inferSelect;
 
-// Verification codes relations
 export const verificationCodesRelations = relations(verificationCodes, ({ one }) => ({
+  user: one(users, { fields: [verificationCodes.userId], references: [users.id] }),
+}));
+
+// New tables for enhanced features
+
+// Service History for digital logbook
+export const serviceHistory = pgTable("service_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  mechanicId: integer("mechanic_id").references(() => users.id).notNull(),
+  jobId: integer("job_id").references(() => jobs.id).notNull(),
+  serviceType: text("service_type").notNull(),
+  description: text("description").notNull(),
+  partsUsed: text("parts_used").array(),
+  laborCost: decimal("labor_cost", { precision: 10, scale: 2 }),
+  partsCost: decimal("parts_cost", { precision: 10, scale: 2 }),
+  totalCost: decimal("total_cost", { precision: 10, scale: 2 }).notNull(),
+  invoiceUrl: text("invoice_url"),
+  warrantyExpiry: timestamp("warranty_expiry"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const serviceHistoryRelations = relations(serviceHistory, ({ one }) => ({
+  user: one(users, { fields: [serviceHistory.userId], references: [users.id] }),
+  mechanic: one(users, { fields: [serviceHistory.mechanicId], references: [users.id] }),
+  job: one(jobs, { fields: [serviceHistory.jobId], references: [jobs.id] }),
+}));
+
+// Inventory management for mechanics
+export const inventory = pgTable("inventory", {
+  id: serial("id").primaryKey(),
+  mechanicId: integer("mechanic_id").references(() => users.id).notNull(),
+  partName: text("part_name").notNull(),
+  partNumber: text("part_number"),
+  quantity: integer("quantity").notNull().default(0),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
+  supplier: text("supplier"),
+  lastRestocked: timestamp("last_restocked"),
+  minimumStock: integer("minimum_stock").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const inventoryRelations = relations(inventory, ({ one }) => ({
+  mechanic: one(users, { fields: [inventory.mechanicId], references: [users.id] }),
+}));
+
+// Booking system for instant scheduling
+export const bookings = pgTable("bookings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  mechanicId: integer("mechanic_id").references(() => users.id).notNull(),
+  jobId: integer("job_id").references(() => jobs.id),
+  scheduledDateTime: timestamp("scheduled_date_time").notNull(),
+  duration: integer("duration").notNull(), // in minutes
+  status: text("status").notNull().default("scheduled"), // scheduled, confirmed, in_progress, completed, cancelled
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const bookingsRelations = relations(bookings, ({ one }) => ({
+  user: one(users, { fields: [bookings.userId], references: [users.id] }),
+  mechanic: one(users, { fields: [bookings.mechanicId], references: [users.id] }),
+  job: one(jobs, { fields: [bookings.jobId], references: [jobs.id] }),
+}));
+
+// Analytics for mechanic performance tracking
+export const mechanicAnalytics = pgTable("mechanic_analytics", {
+  id: serial("id").primaryKey(),
+  mechanicId: integer("mechanic_id").references(() => users.id).notNull(),
+  totalEarnings: decimal("total_earnings", { precision: 12, scale: 2 }).default("0"),
+  jobsCompleted: integer("jobs_completed").default(0),
+  repeatCustomers: integer("repeat_customers").default(0),
+  averageRating: decimal("average_rating", { precision: 3, scale: 2 }).default("0"),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const mechanicAnalyticsRelations = relations(mechanicAnalytics, ({ one }) => ({
+  mechanic: one(users, { fields: [mechanicAnalytics.mechanicId], references: [users.id] }),
+}));
+
+// Insert schemas for new tables
+export const serviceHistoryInsertSchema = createInsertSchema(serviceHistory).omit({
+  id: true,
+  createdAt: true,
+});
+export type ServiceHistoryInsert = z.infer<typeof serviceHistoryInsertSchema>;
+export type ServiceHistory = typeof serviceHistory.$inferSelect;
+
+export const inventoryInsertSchema = createInsertSchema(inventory).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InventoryInsert = z.infer<typeof inventoryInsertSchema>;
+export type Inventory = typeof inventory.$inferSelect;
+
+export const bookingInsertSchema = createInsertSchema(bookings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type BookingInsert = z.infer<typeof bookingInsertSchema>;
+export type Booking = typeof bookings.$inferSelect;
+
+export const mechanicAnalyticsInsertSchema = createInsertSchema(mechanicAnalytics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type MechanicAnalyticsInsert = z.infer<typeof mechanicAnalyticsInsertSchema>;
+export type MechanicAnalytics = typeof mechanicAnalytics.$inferSelect;
   user: one(users, {
     fields: [verificationCodes.userId],
     references: [users.id],
