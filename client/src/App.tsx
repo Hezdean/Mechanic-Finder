@@ -16,6 +16,7 @@ import Register from "@/pages/auth/register";
 import AdminDashboard from "@/pages/dashboard/admin";
 import MechanicDashboard from "@/pages/dashboard/mechanic";
 import UserDashboard from "@/pages/dashboard/user";
+import UserManagement from "@/pages/admin/users";
 import Jobs from "@/pages/jobs/index";
 import PostJob from "@/pages/jobs/post";
 import JobDetails from "@/pages/jobs/[id]";
@@ -48,6 +49,7 @@ function Router() {
         <Route path="/dashboard/admin" component={AdminDashboard} />
         <Route path="/dashboard/mechanic" component={MechanicDashboard} />
         <Route path="/dashboard/user" component={UserDashboard} />
+        <Route path="/admin/users" component={UserManagement} />
         <Route path="/home" component={Home} />
         <Route path="/dashboard" component={DashboardPage} />
         <Route path="/jobs" component={Jobs} />

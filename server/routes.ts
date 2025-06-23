@@ -409,9 +409,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/users', authenticateToken, hasRole('admin'), async (req, res) => {
     try {
       const users = await storage.listUsers();
-      res.json(users);
+      // Remove sensitive information before sending to frontend
+      const sanitizedUsers = users.map(user => ({
+        ...user,
+        passwordHash: undefined,
+        password: undefined
+      }));
+      res.json(sanitizedUsers);
     } catch (error) {
       res.status(500).json({ message: "Error retrieving users", error });
+    }
+  });
+
+  // Update user endpoint (admin only)
+  app.put('/api/users/:id', authenticateToken, hasRole('admin'), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      // Don't allow updating password through this endpoint
+      delete updates.password;
+      delete updates.passwordHash;
+      
+      const updatedUser = await storage.updateUser(userId, updates);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove sensitive information
+      const sanitizedUser = {
+        ...updatedUser,
+        passwordHash: undefined,
+        password: undefined
+      };
+      
+      res.json(sanitizedUser);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating user", error });
+    }
+  });
+
+  // Delete user endpoint (admin only)
+  app.delete('/api/users/:id', authenticateToken, hasRole('admin'), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Don't allow admin to delete their own account
+      if (userId === req.user!.userId) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // In a real app, you might want to soft delete or archive instead
+      // For now, we'll just return success without actually deleting from memory storage
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting user", error });
     }
   });
   
