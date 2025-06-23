@@ -135,7 +135,7 @@ const DashboardPage = () => {
       icon: Briefcase,
       title: "Manage Jobs",
       description: "Oversee all repair jobs",
-      href: "/jobs"
+      href: "/admin/jobs"
     },
     {
       icon: Wrench,
