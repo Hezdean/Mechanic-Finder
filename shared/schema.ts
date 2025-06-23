@@ -437,3 +437,150 @@ export const mechanicAnalyticsInsertSchema = createInsertSchema(mechanicAnalytic
 });
 export type MechanicAnalyticsInsert = z.infer<typeof mechanicAnalyticsInsertSchema>;
 export type MechanicAnalytics = typeof mechanicAnalytics.$inferSelect;
+
+// Marketplace tables
+export const vendors = pgTable("vendors", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  businessName: text("business_name").notNull(),
+  description: text("description"),
+  website: text("website"),
+  phoneNumber: text("phone_number"),
+  address: text("address"),
+  isVerified: boolean("is_verified").default(false),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0.00"),
+  totalSales: integer("total_sales").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  parentId: integer("parent_id").references(() => categories.id),
+  slug: text("slug").notNull().unique(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export const parts = pgTable("parts", {
+  id: serial("id").primaryKey(),
+  vendorId: integer("vendor_id").references(() => vendors.id).notNull(),
+  categoryId: integer("category_id").references(() => categories.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  partNumber: text("part_number"),
+  brand: text("brand"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  stockQuantity: integer("stock_quantity").default(0),
+  images: text("images").array().default([]),
+  specifications: jsonb("specifications"),
+  compatibility: text("compatibility").array().default([]),
+  condition: text("condition").notNull().default("new"),
+  warranty: text("warranty"),
+  shippingWeight: decimal("shipping_weight", { precision: 8, scale: 2 }),
+  dimensions: text("dimensions"),
+  isActive: boolean("is_active").default(true),
+  featured: boolean("featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  vendorId: integer("vendor_id").references(() => vendors.id).notNull(),
+  orderNumber: text("order_number").notNull().unique(),
+  status: text("status").notNull().default("pending"),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  shippingCost: decimal("shipping_cost", { precision: 10, scale: 2 }).default("0.00"),
+  tax: decimal("tax", { precision: 10, scale: 2 }).default("0.00"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  shippingAddress: jsonb("shipping_address").notNull(),
+  billingAddress: jsonb("billing_address"),
+  trackingNumber: text("tracking_number"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id).notNull(),
+  partId: integer("part_id").references(() => parts.id).notNull(),
+  quantity: integer("quantity").notNull(),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow()
+});
+
+export const partReviews = pgTable("part_reviews", {
+  id: serial("id").primaryKey(),
+  partId: integer("part_id").references(() => parts.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  orderId: integer("order_id").references(() => orders.id),
+  rating: integer("rating").notNull(),
+  title: text("title"),
+  comment: text("comment"),
+  verified: boolean("verified").default(false),
+  helpful: integer("helpful").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+// Marketplace types
+export type Vendor = typeof vendors.$inferSelect;
+export type VendorInsert = typeof vendors.$inferInsert;
+
+export type Category = typeof categories.$inferSelect;
+export type CategoryInsert = typeof categories.$inferInsert;
+
+export type Part = typeof parts.$inferSelect;
+export type PartInsert = typeof parts.$inferInsert;
+
+export type Order = typeof orders.$inferSelect;
+export type OrderInsert = typeof orders.$inferInsert;
+
+export type OrderItem = typeof orderItems.$inferSelect;
+export type OrderItemInsert = typeof orderItems.$inferInsert;
+
+export type PartReview = typeof partReviews.$inferSelect;
+export type PartReviewInsert = typeof partReviews.$inferInsert;
+
+// Marketplace relations
+export const vendorsRelations = relations(vendors, ({ one, many }) => ({
+  user: one(users, { fields: [vendors.userId], references: [users.id] }),
+  parts: many(parts),
+  orders: many(orders)
+}));
+
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  parent: one(categories, { fields: [categories.parentId], references: [categories.id] }),
+  children: many(categories),
+  parts: many(parts)
+}));
+
+export const partsRelations = relations(parts, ({ one, many }) => ({
+  vendor: one(vendors, { fields: [parts.vendorId], references: [vendors.id] }),
+  category: one(categories, { fields: [parts.categoryId], references: [categories.id] }),
+  orderItems: many(orderItems),
+  reviews: many(partReviews)
+}));
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  user: one(users, { fields: [orders.userId], references: [users.id] }),
+  vendor: one(vendors, { fields: [orders.vendorId], references: [vendors.id] }),
+  items: many(orderItems)
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
+  part: one(parts, { fields: [orderItems.partId], references: [parts.id] })
+}));
+
+export const partReviewsRelations = relations(partReviews, ({ one }) => ({
+  part: one(parts, { fields: [partReviews.partId], references: [parts.id] }),
+  user: one(users, { fields: [partReviews.userId], references: [users.id] }),
+  order: one(orders, { fields: [partReviews.orderId], references: [orders.id] })
+}));

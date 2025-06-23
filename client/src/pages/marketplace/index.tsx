@@ -186,7 +186,7 @@ const Marketplace = () => {
                   </div>
                   
                   <div className="flex-1">
-                    <h3 className="font-semibold text-sm mb-2 line-clamp-2">{part.name}</h3>
+                    <h3 className="font-semibold text-sm mb-2 truncate">{part.name}</h3>
                     <p className="text-muted-foreground text-xs mb-2">{part.brand}</p>
                     
                     {part.partNumber && (

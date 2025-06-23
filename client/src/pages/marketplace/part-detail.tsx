@@ -357,7 +357,7 @@ const PartDetail = () => {
                           <Package className="h-8 w-8 text-muted-foreground" />
                         )}
                       </div>
-                      <h3 className="font-semibold text-sm mb-2 line-clamp-2">{relatedPart.name}</h3>
+                      <h3 className="font-semibold text-sm mb-2 truncate">{relatedPart.name}</h3>
                       <p className="text-muted-foreground text-xs mb-2">{relatedPart.brand}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-primary">${relatedPart.price}</span>
