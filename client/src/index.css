@@ -3,26 +3,25 @@
 @tailwind utilities;
 
 :root {
-  /* Custom color palette: 8ecae6-219ebc-023047-ffb703-fb8500 */
   --background: 0 0% 100%;
-  --foreground: 208 91% 14%; /* 023047 - Deep Blue */
-  --muted: 195 59% 73%; /* 8ecae6 - Light Blue (Lighter) */
-  --muted-foreground: 208 91% 14%; /* 023047 - Deep Blue */
+  --foreground: 222 84% 5%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
   --popover: 0 0% 100%;
-  --popover-foreground: 208 91% 14%; /* 023047 - Deep Blue */
+  --popover-foreground: 222 84% 5%;
   --card: 0 0% 100%;
-  --card-foreground: 208 91% 14%; /* 023047 - Deep Blue */
-  --border: 195 59% 73%; /* 8ecae6 - Light Blue (Lighter) */
-  --input: 195 59% 73%; /* 8ecae6 - Light Blue (Lighter) */
-  --primary: 195 70% 43%; /* 219ebc - Medium Blue */
+  --card-foreground: 222 84% 5%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --primary: 210 100% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 195 59% 73%; /* 8ecae6 - Light Blue */
-  --secondary-foreground: 208 91% 14%; /* 023047 - Deep Blue */
-  --accent: 42 100% 51%; /* ffb703 - Amber */
-  --accent-foreground: 208 91% 14%; /* 023047 - Deep Blue */
-  --destructive: 28 100% 49%; /* fb8500 - Orange */
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 84% 5%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 195 70% 43%; /* 219ebc - Medium Blue */
+  --ring: 210 100% 50%;
   --radius: 0.5rem;
 }
 
