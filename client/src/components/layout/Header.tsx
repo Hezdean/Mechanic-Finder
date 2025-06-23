@@ -52,6 +52,24 @@ const Header = () => {
 
           </div>
           <div className="flex items-center space-x-4">
+            {/* Navigation Links */}
+            {isAuthenticated && (
+              <nav className="hidden md:flex items-center space-x-6 mr-4">
+                <Link href="/jobs" className="text-foreground hover:text-primary font-medium">
+                  Jobs
+                </Link>
+                <Link href="/mechanics" className="text-foreground hover:text-primary font-medium">
+                  Mechanics
+                </Link>
+                <Link href="/marketplace" className="text-foreground hover:text-primary font-medium">
+                  Parts
+                </Link>
+                <Link href="/diagnostics" className="text-foreground hover:text-primary font-medium">
+                  Diagnostics
+                </Link>
+              </nav>
+            )}
+            
             <ThemeToggle />
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
