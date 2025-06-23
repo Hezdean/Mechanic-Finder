@@ -32,6 +32,12 @@ import DiagnosticsPage from "@/pages/diagnostics";
 import EmergencyPage from "@/pages/emergency";
 import BookingPage from "@/pages/booking";
 import ServiceHistoryPage from "@/pages/service-history";
+import Marketplace from "@/pages/marketplace/index";
+import PartDetail from "@/pages/marketplace/part-detail";
+import VendorProfile from "@/pages/marketplace/vendor-profile";
+import Cart from "@/pages/marketplace/cart";
+import Orders from "@/pages/marketplace/orders";
+import VendorDashboard from "@/pages/vendor/dashboard";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import DashboardPage from "@/pages/dashboard";
@@ -70,6 +76,12 @@ function Router() {
         <Route path="/emergency" component={EmergencyPage} />
         <Route path="/booking" component={BookingPage} />
         <Route path="/service-history" component={ServiceHistoryPage} />
+        <Route path="/marketplace" component={Marketplace} />
+        <Route path="/marketplace/part/:id" component={PartDetail} />
+        <Route path="/marketplace/vendor/:id" component={VendorProfile} />
+        <Route path="/marketplace/cart" component={Cart} />
+        <Route path="/marketplace/orders" component={Orders} />
+        <Route path="/vendor/dashboard" component={VendorDashboard} />
         <Route component={NotFound} />
       </Switch>
       <FloatingActionMenu />
