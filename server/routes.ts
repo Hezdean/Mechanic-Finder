@@ -648,19 +648,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const booking = req.body;
       booking.userId = req.user!.userId;
-      booking.status = 'pending';
+      booking.status = 'confirmed';
       booking.id = Date.now(); // Simple ID generation
       
-      // In a real app, this would save to database
-      // For now, just return the booking
-      res.status(201).json({
-        ...booking,
-        mechanic: {
-          name: "Selected Mechanic",
-          location: "Service Location",
-          phone: "(555) 000-0000"
-        }
+      // Get user information for notifications
+      const user = await storage.getUser(req.user!.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Mock mechanic data (in real app, fetch from database)
+      const mockMechanic = {
+        name: "Mike Johnson",
+        email: "mike@autorepair.com",
+        phone: "(555) 123-4567",
+        location: "Downtown Auto Center"
+      };
+
+      // Send confirmation emails
+      const customerNotificationSent = await sendBookingConfirmation({
+        bookingId: booking.id,
+        customerEmail: user.email,
+        customerName: `${user.firstName} ${user.lastName}`,
+        mechanicEmail: mockMechanic.email,
+        mechanicName: mockMechanic.name,
+        serviceType: booking.serviceType,
+        scheduledDate: booking.scheduledDate,
+        scheduledTime: booking.scheduledTime,
+        location: mockMechanic.location,
+        vehicleInfo: booking.vehicleInfo,
+        price: booking.price,
+        notes: booking.notes
       });
+
+      const mechanicNotificationSent = await sendMechanicNotification({
+        bookingId: booking.id,
+        customerEmail: user.email,
+        customerName: `${user.firstName} ${user.lastName}`,
+        mechanicEmail: mockMechanic.email,
+        mechanicName: mockMechanic.name,
+        serviceType: booking.serviceType,
+        scheduledDate: booking.scheduledDate,
+        scheduledTime: booking.scheduledTime,
+        location: mockMechanic.location,
+        vehicleInfo: booking.vehicleInfo,
+        price: booking.price,
+        notes: booking.notes
+      });
+
+      // Return booking with mechanic details
+      const responseBooking = {
+        ...booking,
+        mechanic: mockMechanic,
+        notificationsSent: {
+          customer: customerNotificationSent,
+          mechanic: mechanicNotificationSent
+        }
+      };
+      
+      res.status(201).json(responseBooking);
     } catch (error) {
       res.status(500).json({ message: "Error creating booking", error });
     }
@@ -670,8 +716,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const bookingId = parseInt(req.params.id);
       
-      // In a real app, this would update booking status in database
-      res.json({ message: "Booking cancelled successfully" });
+      // Get user information
+      const user = await storage.getUser(req.user!.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Mock booking data (in real app, fetch from database)
+      const mockBooking = {
+        serviceType: "Oil Change",
+        scheduledDate: "2024-01-15",
+        scheduledTime: "10:00"
+      };
+
+      // Mock mechanic data
+      const mockMechanic = {
+        name: "Mike Johnson",
+        email: "mike@autorepair.com"
+      };
+
+      // Send cancellation notifications
+      const cancellationSent = await sendCancellationNotification(
+        user.email,
+        mockMechanic.email,
+        `${user.firstName} ${user.lastName}`,
+        mockMechanic.name,
+        mockBooking.serviceType,
+        mockBooking.scheduledDate,
+        mockBooking.scheduledTime
+      );
+
+      res.json({ 
+        message: "Booking cancelled successfully",
+        notificationSent: cancellationSent
+      });
     } catch (error) {
       res.status(500).json({ message: "Error cancelling booking", error });
     }
@@ -684,6 +762,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json([]);
     } catch (error) {
       res.status(500).json({ message: "Error fetching available mechanics", error });
+    }
+  });
+
+  // Manual reminder trigger endpoint (for testing)
+  app.post('/api/admin/trigger-reminders', authenticateToken, hasRole('admin'), async (req, res) => {
+    try {
+      const { triggerRemindersNow } = await import('./scheduler');
+      const result = await triggerRemindersNow();
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "Error triggering reminders", error });
     }
   });
   
