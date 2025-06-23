@@ -738,10 +738,10 @@ export default function SchedulingPage() {
 
               {/* Price Estimate */}
               {selectedService && selectedMechanic && (
-                <div className="border rounded-lg p-4 bg-blue-50">
+                <div className="border rounded-lg p-4 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium">Estimated Total:</span>
-                    <span className="text-xl font-bold text-blue-600">
+                    <span className="font-medium text-foreground">Estimated Total:</span>
+                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                       ${((serviceTypes.find(s => s.value === selectedService)?.basePrice || 0) + 
                         (selectedMechanic.hourlyRate * (serviceTypes.find(s => s.value === selectedService)?.duration || 1))).toLocaleString()}
                     </span>
@@ -749,11 +749,11 @@ export default function SchedulingPage() {
                   <div className="text-sm text-muted-foreground space-y-1">
                     <div className="flex justify-between">
                       <span>Base service:</span>
-                      <span>${serviceTypes.find(s => s.value === selectedService)?.basePrice}</span>
+                      <span className="text-foreground">${serviceTypes.find(s => s.value === selectedService)?.basePrice}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Labor ({serviceTypes.find(s => s.value === selectedService)?.duration}h @ ${selectedMechanic.hourlyRate}/hr):</span>
-                      <span>${selectedMechanic.hourlyRate * (serviceTypes.find(s => s.value === selectedService)?.duration || 1)}</span>
+                      <span className="text-foreground">${selectedMechanic.hourlyRate * (serviceTypes.find(s => s.value === selectedService)?.duration || 1)}</span>
                     </div>
                   </div>
                 </div>
@@ -761,29 +761,29 @@ export default function SchedulingPage() {
 
               {/* Booking Summary */}
               {selectedMechanic && selectedDate && selectedTime && selectedService && (
-                <div className="border rounded-lg p-4 bg-green-50">
-                  <h4 className="font-medium text-green-800 mb-2">Booking Summary</h4>
+                <div className="border rounded-lg p-4 bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
+                  <h4 className="font-medium text-green-800 dark:text-green-400 mb-2">Booking Summary</h4>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span>Service:</span>
-                      <span className="font-medium">{serviceTypes.find(s => s.value === selectedService)?.label}</span>
+                      <span className="text-muted-foreground">Service:</span>
+                      <span className="font-medium text-foreground">{serviceTypes.find(s => s.value === selectedService)?.label}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Date:</span>
-                      <span className="font-medium">{format(selectedDate, 'PPP')}</span>
+                      <span className="text-muted-foreground">Date:</span>
+                      <span className="font-medium text-foreground">{format(selectedDate, 'PPP')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Time:</span>
-                      <span className="font-medium">{selectedTime}</span>
+                      <span className="text-muted-foreground">Time:</span>
+                      <span className="font-medium text-foreground">{selectedTime}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Mechanic:</span>
-                      <span className="font-medium">{selectedMechanic.name}</span>
+                      <span className="text-muted-foreground">Mechanic:</span>
+                      <span className="font-medium text-foreground">{selectedMechanic.name}</span>
                     </div>
                     {vehicleInfo.make && vehicleInfo.model && (
                       <div className="flex justify-between">
-                        <span>Vehicle:</span>
-                        <span className="font-medium">{vehicleInfo.year} {vehicleInfo.make} {vehicleInfo.model}</span>
+                        <span className="text-muted-foreground">Vehicle:</span>
+                        <span className="font-medium text-foreground">{vehicleInfo.year} {vehicleInfo.make} {vehicleInfo.model}</span>
                       </div>
                     )}
                   </div>
@@ -798,7 +798,7 @@ export default function SchedulingPage() {
                 </div>
                 <div className="text-right">
                   {selectedService && selectedMechanic && (
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-lg font-bold text-primary dark:text-primary">
                       Total: ${((serviceTypes.find(s => s.value === selectedService)?.basePrice || 0) + 
                         (selectedMechanic.hourlyRate * (serviceTypes.find(s => s.value === selectedService)?.duration || 1))).toLocaleString()}
                     </div>

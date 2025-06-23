@@ -27,25 +27,25 @@
 }
 
 .dark {
-  --background: 208 91% 14%; /* 023047 - Deep Blue */
-  --foreground: 0 0% 98%;
-  --muted: 208 91% 24%; /* 023047 - Deep Blue (Lighter) */
-  --muted-foreground: 195 59% 73%; /* 8ecae6 - Light Blue */
-  --popover: 208 91% 14%; /* 023047 - Deep Blue */
-  --popover-foreground: 0 0% 98%;
-  --card: 208 91% 14%; /* 023047 - Deep Blue */
-  --card-foreground: 0 0% 98%;
-  --border: 208 91% 24%; /* 023047 - Deep Blue (Lighter) */
-  --input: 208 91% 24%; /* 023047 - Deep Blue (Lighter) */
-  --primary: 195 70% 43%; /* 219ebc - Medium Blue */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 208 91% 24%; /* 023047 - Deep Blue (Lighter) */
-  --secondary-foreground: 0 0% 98%;
-  --accent: 42 100% 51%; /* ffb703 - Amber */
-  --accent-foreground: 208 91% 14%; /* 023047 - Deep Blue */
-  --destructive: 28 100% 49%; /* fb8500 - Orange */
-  --destructive-foreground: 0 0% 98%;
-  --ring: 195 59% 73%; /* 8ecae6 - Light Blue */
+  --background: 222 84% 5%; /* Very dark blue-gray */
+  --foreground: 210 40% 98%; /* Near white with slight blue tint */
+  --muted: 217 33% 17%; /* Dark muted background */
+  --muted-foreground: 215 20% 65%; /* Medium gray for muted text */
+  --popover: 222 84% 5%;
+  --popover-foreground: 210 40% 98%;
+  --card: 222 84% 5%;
+  --card-foreground: 210 40% 98%;
+  --border: 217 33% 17%; /* Subtle border color */
+  --input: 217 33% 17%;
+  --primary: 210 100% 65%; /* Bright blue for primary actions */
+  --primary-foreground: 222 84% 5%; /* Dark text on primary */
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --accent: 38 92% 50%; /* Bright amber for accents */
+  --accent-foreground: 222 84% 5%;
+  --destructive: 0 84% 60%; /* Red for destructive actions */
+  --destructive-foreground: 210 40% 98%;
+  --ring: 210 100% 65%;
   --radius: 0.5rem;
 }
 
