@@ -263,6 +263,15 @@ export default function SchedulingPage() {
       return;
     }
 
+    if (!vehicleInfo.make || !vehicleInfo.model) {
+      toast({
+        title: "Vehicle information required",
+        description: "Please provide your vehicle make and model.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const serviceType = serviceTypes.find(s => s.value === selectedService);
     const bookingData = {
       mechanicId: selectedMechanic.userId,
@@ -553,7 +562,7 @@ export default function SchedulingPage() {
 
         {/* Book Appointment Dialog */}
         <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-          <DialogContent className="sm:max-w-2xl">
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Book Service Appointment</DialogTitle>
               <DialogDescription>
@@ -699,29 +708,74 @@ export default function SchedulingPage() {
 
               {/* Price Estimate */}
               {selectedService && selectedMechanic && (
-                <div className="border rounded-lg p-3 bg-blue-50">
-                  <div className="flex justify-between items-center">
+                <div className="border rounded-lg p-4 bg-blue-50">
+                  <div className="flex justify-between items-center mb-2">
                     <span className="font-medium">Estimated Total:</span>
-                    <span className="text-lg font-bold">
+                    <span className="text-xl font-bold text-blue-600">
                       ${((serviceTypes.find(s => s.value === selectedService)?.basePrice || 0) + 
                         (selectedMechanic.hourlyRate * (serviceTypes.find(s => s.value === selectedService)?.duration || 1))).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Base service: ${serviceTypes.find(s => s.value === selectedService)?.basePrice} + 
-                    Labor: ${selectedMechanic.hourlyRate}/hr × {serviceTypes.find(s => s.value === selectedService)?.duration}h
-                  </p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <div className="flex justify-between">
+                      <span>Base service:</span>
+                      <span>${serviceTypes.find(s => s.value === selectedService)?.basePrice}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Labor ({serviceTypes.find(s => s.value === selectedService)?.duration}h @ ${selectedMechanic.hourlyRate}/hr):</span>
+                      <span>${selectedMechanic.hourlyRate * (serviceTypes.find(s => s.value === selectedService)?.duration || 1)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Booking Summary */}
+              {selectedMechanic && selectedDate && selectedTime && selectedService && (
+                <div className="border rounded-lg p-4 bg-green-50">
+                  <h4 className="font-medium text-green-800 mb-2">Booking Summary</h4>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Service:</span>
+                      <span className="font-medium">{serviceTypes.find(s => s.value === selectedService)?.label}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Date:</span>
+                      <span className="font-medium">{format(selectedDate, 'PPP')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Time:</span>
+                      <span className="font-medium">{selectedTime}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Mechanic:</span>
+                      <span className="font-medium">{selectedMechanic.name}</span>
+                    </div>
+                    {vehicleInfo.make && vehicleInfo.model && (
+                      <div className="flex justify-between">
+                        <span>Vehicle:</span>
+                        <span className="font-medium">{vehicleInfo.year} {vehicleInfo.make} {vehicleInfo.model}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
+            <DialogFooter className="flex justify-end gap-2 pt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsBookingDialogOpen(false);
+                  resetBookingForm();
+                }}
+                disabled={bookAppointmentMutation.isPending}
+              >
                 Cancel
               </Button>
               <Button 
                 onClick={handleBookAppointment}
-                disabled={bookAppointmentMutation.isPending}
+                disabled={bookAppointmentMutation.isPending || !selectedMechanic || !selectedDate || !selectedTime || !selectedService}
+                className="min-w-[140px]"
               >
                 {bookAppointmentMutation.isPending ? "Booking..." : "Book Appointment"}
               </Button>
@@ -738,7 +792,7 @@ export default function SchedulingPage() {
             {viewingBooking && (
               <div className="space-y-4">
                 <div className="text-center">
-                  <Badge className={getStatusBadgeColor(viewingBooking.status)} className="mb-2">
+                  <Badge className={`${getStatusBadgeColor(viewingBooking.status)} mb-2`}>
                     {viewingBooking.status.toUpperCase()}
                   </Badge>
                   <h3 className="text-lg font-semibold">
