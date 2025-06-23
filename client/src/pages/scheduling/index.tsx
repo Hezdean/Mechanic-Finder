@@ -582,11 +582,11 @@ export default function SchedulingPage() {
 
         {/* Book Appointment Dialog */}
         <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Book Service Appointment</DialogTitle>
               <DialogDescription>
-                Schedule your vehicle service with {selectedMechanic?.name || "a mechanic"}
+                Complete all fields below to schedule your service appointment
               </DialogDescription>
             </DialogHeader>
             
@@ -726,12 +726,13 @@ export default function SchedulingPage() {
 
               {/* Notes */}
               <div>
-                <label className="text-sm font-medium">Additional Notes</label>
+                <label className="text-sm font-medium mb-2 block">Additional Notes</label>
                 <Textarea
                   placeholder="Describe the issue or special requirements..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
+                  className="resize-none"
                 />
               </div>
 
@@ -790,35 +791,58 @@ export default function SchedulingPage() {
               )}
             </div>
 
-            <DialogFooter className="flex justify-end gap-2 pt-6 border-t mt-6">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setIsBookingDialogOpen(false);
-                  resetBookingForm();
-                }}
-                disabled={bookAppointmentMutation.isPending}
-                className="px-6"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleBookAppointment}
-                disabled={
-                  bookAppointmentMutation.isPending || 
-                  !selectedMechanic || 
-                  !selectedDate || 
-                  !selectedTime || 
-                  !selectedService ||
-                  !vehicleInfo.make ||
-                  !vehicleInfo.model
-                }
-                className="min-w-[140px] px-6"
-                type="submit"
-              >
-                {bookAppointmentMutation.isPending ? "Booking..." : "Book Appointment"}
-              </Button>
-            </DialogFooter>
+            <div className="border-t pt-6 mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-sm text-muted-foreground">
+                  Complete all required fields to continue
+                </div>
+                <div className="text-right">
+                  {selectedService && selectedMechanic && (
+                    <div className="text-lg font-bold text-primary">
+                      Total: ${((serviceTypes.find(s => s.value === selectedService)?.basePrice || 0) + 
+                        (selectedMechanic.hourlyRate * (serviceTypes.find(s => s.value === selectedService)?.duration || 1))).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <DialogFooter className="flex justify-end gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsBookingDialogOpen(false);
+                    resetBookingForm();
+                  }}
+                  disabled={bookAppointmentMutation.isPending}
+                  className="px-6"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleBookAppointment}
+                  disabled={
+                    bookAppointmentMutation.isPending || 
+                    !selectedMechanic || 
+                    !selectedDate || 
+                    !selectedTime || 
+                    !selectedService ||
+                    !vehicleInfo.make ||
+                    !vehicleInfo.model
+                  }
+                  className="min-w-[160px] px-8 py-2 bg-primary hover:bg-primary/90"
+                  size="lg"
+                >
+                  {bookAppointmentMutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Booking...
+                    </div>
+                  ) : (
+                    "Book Appointment"
+                  )}
+                </Button>
+              </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
 
