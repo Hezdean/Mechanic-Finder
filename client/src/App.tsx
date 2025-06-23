@@ -38,7 +38,7 @@ function Router() {
     <>
       <Header />
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/" component={DashboardPage} />
         <Route path="/login" component={Login} />
         <Route path="/direct-login" component={DirectLogin} />
         <Route path="/simple-login" component={SimpleLogin} />
@@ -48,6 +48,7 @@ function Router() {
         <Route path="/dashboard/admin" component={AdminDashboard} />
         <Route path="/dashboard/mechanic" component={MechanicDashboard} />
         <Route path="/dashboard/user" component={UserDashboard} />
+        <Route path="/home" component={Home} />
         <Route path="/dashboard" component={DashboardPage} />
         <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/post" component={PostJob} />

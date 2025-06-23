@@ -20,9 +20,28 @@ const DashboardPage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h1 className="text-2xl font-bold mb-4">Please log in to access your dashboard</h1>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-6 p-8">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold text-foreground">Admin Dashboard</h1>
+            <p className="text-muted-foreground text-lg">Welcome to the Mechanic Finder Admin Portal</p>
+          </div>
+          
+          <div className="space-y-4">
+            <p className="text-muted-foreground">Please log in to access the admin dashboard</p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/login">
+                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  Login as Admin
+                </Button>
+              </Link>
+              <Link href="/home">
+                <Button variant="outline" size="lg">
+                  View Public Site
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );
