@@ -85,25 +85,25 @@ const DashboardPage = () => {
   const features = user.role === "mechanic" ? mechanicFeatures : vehicleOwnerFeatures;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12">
         {/* User Role Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
-              user.role === "mechanic" ? "bg-orange-400" : "bg-blue-400"
+              user.role === "mechanic" ? "bg-primary" : "bg-primary"
             }`}>
               {user.role === "mechanic" ? (
-                <Wrench className="h-12 w-12 text-white" />
+                <Wrench className="h-12 w-12 text-primary-foreground" />
               ) : (
-                <User className="h-12 w-12 text-white" />
+                <User className="h-12 w-12 text-primary-foreground" />
               )}
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
             {user.role === "mechanic" ? "Mechanic" : "Vehicle Owner"}
           </h1>
-          <p className="text-blue-200 text-lg">
+          <p className="text-muted-foreground text-lg">
             Welcome back, {user.firstName || user.username}
           </p>
         </div>
@@ -112,17 +112,17 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {features.map((feature, index) => (
             <Link key={index} href={feature.href}>
-              <Card className={`${feature.bgColor} border-2 border-blue-400/30 transition-all duration-300 hover:scale-105 hover:border-blue-300/50 cursor-pointer h-40`}>
-                <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full">
-                  <div className={`w-16 h-16 rounded-full ${feature.iconBg} flex items-center justify-center mb-4`}>
-                    {feature.icon}
+              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border hover:border-primary/50 transform hover:scale-105">
+                <CardContent className="p-8">
+                  <div className="flex items-center mb-6">
+                    <div className="bg-primary/10 p-4 rounded-xl mr-6 group-hover:bg-primary/20 transition-colors">
+                      <feature.icon className="h-12 w-12 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">{feature.title}</h3>
+                      <p className="text-muted-foreground group-hover:text-foreground transition-colors">{feature.description}</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-blue-100 text-sm">
-                    {feature.description}
-                  </p>
                 </CardContent>
               </Card>
             </Link>
@@ -133,22 +133,22 @@ const DashboardPage = () => {
         {user.role === "mechanic" && (
           <div className="mt-12 max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-blue-800/50 border-blue-400/30">
+              <Card>
                 <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-white mb-2">12</div>
-                  <div className="text-blue-200">Jobs Completed</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">12</div>
+                  <div className="text-muted-foreground">Jobs Completed</div>
                 </CardContent>
               </Card>
-              <Card className="bg-blue-800/50 border-blue-400/30">
+              <Card>
                 <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-white mb-2">4.8</div>
-                  <div className="text-blue-200">Average Rating</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">4.8</div>
+                  <div className="text-muted-foreground">Average Rating</div>
                 </CardContent>
               </Card>
-              <Card className="bg-blue-800/50 border-blue-400/30">
+              <Card>
                 <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-white mb-2">$2,450</div>
-                  <div className="text-blue-200">This Month</div>
+                  <div className="text-3xl font-bold text-foreground mb-2">$2,450</div>
+                  <div className="text-muted-foreground">This Month</div>
                 </CardContent>
               </Card>
             </div>
