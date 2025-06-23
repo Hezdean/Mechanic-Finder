@@ -10,7 +10,8 @@ import {
   History, 
   Briefcase, 
   DollarSign,
-  Settings
+  Settings,
+  Stethoscope
 } from "lucide-react";
 
 const DashboardPage = () => {
@@ -28,36 +29,28 @@ const DashboardPage = () => {
 
   const vehicleOwnerFeatures = [
     {
-      icon: <Wrench className="h-12 w-12" />,
+      icon: Car,
       title: "Book a Mechanic",
       description: "Find and schedule appointments",
-      href: "/booking",
-      bgColor: "bg-blue-600 hover:bg-blue-700",
-      iconBg: "bg-orange-400"
+      href: "/booking"
     },
     {
-      icon: <Car className="h-12 w-12" />,
+      icon: Stethoscope,
       title: "Vehicle Diagnostics", 
       description: "AI-powered vehicle analysis",
-      href: "/diagnostics",
-      bgColor: "bg-blue-600 hover:bg-blue-700",
-      iconBg: "bg-orange-400"
+      href: "/diagnostics"
     },
     {
-      icon: <AlertTriangle className="h-12 w-12" />,
+      icon: AlertTriangle,
       title: "Emergency Help",
       description: "Immediate roadside assistance",
-      href: "/emergency",
-      bgColor: "bg-blue-600 hover:bg-blue-700",
-      iconBg: "bg-red-500"
+      href: "/emergency"
     },
     {
-      icon: <History className="h-12 w-12" />,
+      icon: History,
       title: "Service History",
       description: "Track your vehicle maintenance",
-      href: "/service-history",
-      bgColor: "bg-blue-600 hover:bg-blue-700",
-      iconBg: "bg-blue-400"
+      href: "/service-history"
     }
   ];
 
