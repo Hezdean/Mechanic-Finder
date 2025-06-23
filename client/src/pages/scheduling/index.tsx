@@ -133,14 +133,14 @@ export default function SchedulingPage() {
   const [viewingBooking, setViewingBooking] = useState<Booking | null>(null);
 
   // Fetch user's bookings
-  const { data: bookings = [], isLoading: bookingsLoading } = useQuery({
+  const { data: bookings = [], isLoading: bookingsLoading, error: bookingsError } = useQuery({
     queryKey: ['/api/bookings'],
     enabled: !!user,
     refetchInterval: 30000,
   });
 
   // Fetch available mechanics
-  const { data: mechanics = [], isLoading: mechanicsLoading } = useQuery({
+  const { data: mechanics = [], isLoading: mechanicsLoading, error: mechanicsError } = useQuery({
     queryKey: ['/api/mechanics/available'],
     refetchInterval: 60000,
   });
@@ -353,6 +353,26 @@ export default function SchedulingPage() {
         </div>
       </div>
     );
+  }
+
+  // Show loading state
+  if (bookingsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <p className="mt-4">Loading your appointments...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (bookingsError) {
+    console.error('Bookings error:', bookingsError);
+  }
+  if (mechanicsError) {
+    console.error('Mechanics error:', mechanicsError);
   }
 
   return (
@@ -674,25 +694,34 @@ export default function SchedulingPage() {
 
               {/* Vehicle Information */}
               <div>
-                <label className="text-sm font-medium">Vehicle Information</label>
+                <label className="text-sm font-medium">Vehicle Information <span className="text-red-500">*</span></label>
                 <div className="grid grid-cols-3 gap-2 mt-1">
                   <Input
                     placeholder="Make (e.g., Honda)"
                     value={vehicleInfo.make}
                     onChange={(e) => setVehicleInfo({...vehicleInfo, make: e.target.value})}
+                    className={!vehicleInfo.make ? "border-red-300" : ""}
+                    required
                   />
                   <Input
                     placeholder="Model (e.g., Civic)"
                     value={vehicleInfo.model}
                     onChange={(e) => setVehicleInfo({...vehicleInfo, model: e.target.value})}
+                    className={!vehicleInfo.model ? "border-red-300" : ""}
+                    required
                   />
                   <Input
                     type="number"
                     placeholder="Year"
                     value={vehicleInfo.year}
                     onChange={(e) => setVehicleInfo({...vehicleInfo, year: parseInt(e.target.value)})}
+                    min="1900"
+                    max={new Date().getFullYear() + 1}
                   />
                 </div>
+                {(!vehicleInfo.make || !vehicleInfo.model) && (
+                  <p className="text-xs text-red-500 mt-1">Vehicle make and model are required</p>
+                )}
               </div>
 
               {/* Notes */}
@@ -761,7 +790,7 @@ export default function SchedulingPage() {
               )}
             </div>
 
-            <DialogFooter className="flex justify-end gap-2 pt-6">
+            <DialogFooter className="flex justify-end gap-2 pt-6 border-t mt-6">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -769,13 +798,22 @@ export default function SchedulingPage() {
                   resetBookingForm();
                 }}
                 disabled={bookAppointmentMutation.isPending}
+                className="px-6"
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleBookAppointment}
-                disabled={bookAppointmentMutation.isPending || !selectedMechanic || !selectedDate || !selectedTime || !selectedService}
-                className="min-w-[140px]"
+                disabled={
+                  bookAppointmentMutation.isPending || 
+                  !selectedMechanic || 
+                  !selectedDate || 
+                  !selectedTime || 
+                  !selectedService ||
+                  !vehicleInfo.make ||
+                  !vehicleInfo.model
+                }
+                className="min-w-[140px] px-6"
               >
                 {bookAppointmentMutation.isPending ? "Booking..." : "Book Appointment"}
               </Button>

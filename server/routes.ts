@@ -12,6 +12,7 @@ import {
   transactionInsertSchema
 } from "@shared/schema";
 import { createEmailVerification, createPhoneVerification, verifyEmailCode, verifyPhoneOTP, resendVerification } from "./verification";
+import { sendBookingConfirmation, sendMechanicNotification, sendCancellationNotification } from "./notifications";
 import bcrypt from "bcrypt";
 import { generateToken, verifyToken, refreshToken, type JwtPayload } from "./jwt";
 
