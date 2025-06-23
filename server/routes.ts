@@ -340,6 +340,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Nearby mechanics route
+  // Marketplace routes
+  app.get("/api/parts", async (req: Request, res: Response) => {
+    const { getPartsHandler } = await import("./marketplace");
+    return getPartsHandler(req, res);
+  });
+
+  app.get("/api/categories", async (req: Request, res: Response) => {
+    const { getCategoriesHandler } = await import("./marketplace");
+    return getCategoriesHandler(req, res);
+  });
+
+  app.get("/api/parts/featured", async (req: Request, res: Response) => {
+    const { getFeaturedPartsHandler } = await import("./marketplace");
+    return getFeaturedPartsHandler(req, res);
+  });
+
+  app.get("/api/parts/:id", async (req: Request, res: Response) => {
+    const { getPartByIdHandler } = await import("./marketplace");
+    return getPartByIdHandler(req, res);
+  });
+
+  app.get("/api/parts/:id/reviews", async (req: Request, res: Response) => {
+    const { getPartReviewsHandler } = await import("./marketplace");
+    return getPartReviewsHandler(req, res);
+  });
+
+  app.get("/api/parts/:id/related", async (req: Request, res: Response) => {
+    const { getRelatedPartsHandler } = await import("./marketplace");
+    return getRelatedPartsHandler(req, res);
+  });
+
   app.get("/api/mechanics/nearby", authenticateToken, async (req: Request, res: Response) => {
     try {
       const mechanics = await storage.listMechanicProfiles();
