@@ -632,6 +632,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error performing job action", error });
     }
   });
+
+  // Booking endpoints
+  app.get('/api/bookings', authenticateToken, async (req, res) => {
+    try {
+      // In a real app, this would fetch user's bookings from database
+      // For now, return empty array since we're using mock data in frontend
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching bookings", error });
+    }
+  });
+
+  app.post('/api/bookings', authenticateToken, async (req, res) => {
+    try {
+      const booking = req.body;
+      booking.userId = req.user!.userId;
+      booking.status = 'pending';
+      booking.id = Date.now(); // Simple ID generation
+      
+      // In a real app, this would save to database
+      // For now, just return the booking
+      res.status(201).json({
+        ...booking,
+        mechanic: {
+          name: "Selected Mechanic",
+          location: "Service Location",
+          phone: "(555) 000-0000"
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error creating booking", error });
+    }
+  });
+
+  app.post('/api/bookings/:id/cancel', authenticateToken, async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      
+      // In a real app, this would update booking status in database
+      res.json({ message: "Booking cancelled successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error cancelling booking", error });
+    }
+  });
+
+  app.get('/api/mechanics/available', async (req, res) => {
+    try {
+      // In a real app, this would fetch available mechanics from database
+      // For now, return empty array since we're using mock data in frontend
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching available mechanics", error });
+    }
+  });
   
   // Mechanic profile routes - users can become mechanics by creating profiles
   app.post('/api/mechanic-profiles', authenticateToken, validateRequest(mechanicProfileInsertSchema), async (req, res) => {
