@@ -814,6 +814,7 @@ export default function SchedulingPage() {
                   !vehicleInfo.model
                 }
                 className="min-w-[140px] px-6"
+                type="submit"
               >
                 {bookAppointmentMutation.isPending ? "Booking..." : "Book Appointment"}
               </Button>
