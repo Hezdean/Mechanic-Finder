@@ -95,7 +95,34 @@ const DashboardPage = () => {
     }
   ];
 
-  const features = user.role === "mechanic" ? mechanicFeatures : vehicleOwnerFeatures;
+  const adminFeatures = [
+    {
+      icon: Settings,
+      title: "Manage Users",
+      description: "View and manage all users",
+      href: "/admin/users"
+    },
+    {
+      icon: Briefcase,
+      title: "Manage Jobs",
+      description: "Oversee all repair jobs",
+      href: "/jobs"
+    },
+    {
+      icon: Wrench,
+      title: "Manage Mechanics",
+      description: "Review mechanic profiles",
+      href: "/mechanics"
+    },
+    {
+      icon: DollarSign,
+      title: "System Analytics",
+      description: "View platform metrics",
+      href: "/admin/analytics"
+    }
+  ];
+
+  const features = user.role === "admin" ? adminFeatures : user.role === "mechanic" ? mechanicFeatures : vehicleOwnerFeatures;
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,10 +130,10 @@ const DashboardPage = () => {
         {/* User Role Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
-              user.role === "mechanic" ? "bg-primary" : "bg-primary"
-            }`}>
-              {user.role === "mechanic" ? (
+            <div className="w-24 h-24 rounded-full flex items-center justify-center bg-primary">
+              {user.role === "admin" ? (
+                <Settings className="h-12 w-12 text-primary-foreground" />
+              ) : user.role === "mechanic" ? (
                 <Wrench className="h-12 w-12 text-primary-foreground" />
               ) : (
                 <User className="h-12 w-12 text-primary-foreground" />
@@ -114,7 +141,7 @@ const DashboardPage = () => {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            {user.role === "mechanic" ? "Mechanic" : "Vehicle Owner"}
+            {user.role === "admin" ? "Admin" : user.role === "mechanic" ? "Mechanic" : "Vehicle Owner"}
           </h1>
           <p className="text-muted-foreground text-lg">
             Welcome back, {user.firstName || user.username}
@@ -141,6 +168,38 @@ const DashboardPage = () => {
             </Link>
           ))}
         </div>
+
+        {/* Quick Stats for Admins */}
+        {user.role === "admin" && (
+          <div className="mt-12 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-3xl font-bold text-foreground mb-2">25</div>
+                  <div className="text-muted-foreground">Total Users</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-3xl font-bold text-foreground mb-2">8</div>
+                  <div className="text-muted-foreground">Active Mechanics</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-3xl font-bold text-foreground mb-2">12</div>
+                  <div className="text-muted-foreground">Open Jobs</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-3xl font-bold text-foreground mb-2">$15,890</div>
+                  <div className="text-muted-foreground">Total Revenue</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
 
         {/* Quick Stats for Mechanics */}
         {user.role === "mechanic" && (
