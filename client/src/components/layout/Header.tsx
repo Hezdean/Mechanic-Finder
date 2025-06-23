@@ -52,7 +52,7 @@ const Header = () => {
 
           </div>
           <div className="flex items-center space-x-4">
-            {/* Add ThemeToggle import at top */}
+            <ThemeToggle />
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link href="/messages">
