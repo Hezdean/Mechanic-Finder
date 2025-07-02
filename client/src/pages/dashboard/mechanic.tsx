@@ -114,14 +114,15 @@ const MechanicDashboard = () => {
 
   // Open jobs query (jobs that a mechanic can bid on)
   const { data: openJobs, isLoading: isLoadingOpenJobs } = useQuery({
-    queryKey: ['/api/jobs?status=open'],
-    select: (data) => data?.filter((job: any) => job.status === 'open')
+    queryKey: ['/api/jobs'],
+    select: (data) => data?.filter((job: any) => job.status === 'open') || []
   });
 
   // Notifications query for bid acceptances
   const { data: notifications, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['/api/messages/unread'],
     refetchInterval: 30000, // Poll every 30 seconds for new notifications
+    select: (data) => data?.filter((msg: any) => msg.type === 'bid_accepted') || []
   });
 
   // My bids query
@@ -572,6 +573,40 @@ const MechanicDashboard = () => {
           </Card>
         ) : null}
 
+        {/* Arrival Verification Instructions for Active Jobs */}
+        {profile && activeJobs && activeJobs.length > 0 && (
+          <Card className="mb-8 border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center text-blue-800">
+                <MapPin className="mr-2 h-5 w-5" />
+                Arrival Verification Process
+              </CardTitle>
+              <CardDescription className="text-blue-700">
+                When you arrive at job sites, generate arrival codes to verify your presence with customers.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-white rounded-lg p-4 border border-blue-200">
+                <h4 className="font-semibold text-blue-900 mb-3">How Arrival Verification Works:</h4>
+                <ol className="list-decimal list-inside space-y-2 text-blue-800 text-sm">
+                  <li>Contact the customer to coordinate your arrival time</li>
+                  <li>When you arrive on-site, click "I'm On-Site" button</li>
+                  <li>A 6-character verification code will be generated</li>
+                  <li>Share this code with the customer for verification</li>
+                  <li>Customer enters the code to confirm your arrival</li>
+                  <li>Payment becomes available after verification</li>
+                </ol>
+                <div className="mt-3 p-3 bg-blue-100 rounded border">
+                  <p className="text-xs text-blue-700">
+                    <strong>Important:</strong> Only generate the arrival code when you are physically present at the job location. 
+                    This system ensures secure payment processing and builds trust with customers.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Notifications Section for Bid Acceptances */}
         {profile && notifications && notifications.length > 0 && (
           <Card className="mb-8 border-green-200 bg-green-50">
@@ -663,45 +698,49 @@ const MechanicDashboard = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {activeJobs.map((job: any) => (
-                            <TableRow key={job.id}>
-                              <TableCell className="font-medium">{job.title}</TableCell>
-                              <TableCell>{job.vehicle}</TableCell>
-                              <TableCell>{job.location}</TableCell>
-                              <TableCell>
-                                {job.mechanicArrivalVerified ? (
-                                  <Badge className="bg-green-100 text-green-800">
-                                    ✓ Verified
-                                  </Badge>
-                                ) : (
-                                  <Badge className="bg-amber-100 text-amber-800">
-                                    Pending Arrival
-                                  </Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-2 flex-wrap">
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => navigate(`/jobs/${job.id}`)}
-                                  >
-                                    View Details
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="secondary"
-                                    onClick={() => navigate(`/messages?conversation=${job.userId}&jobId=${job.id}`)}
-                                  >
-                                    Message Customer
-                                  </Button>
-                                  {!job.mechanicArrivalVerified && (
-                                    <ArrivalCodeGenerator jobId={job.id} />
+                          {activeJobs.map((bid: any) => {
+                            // Get job data for this bid
+                            const job = openJobs?.find((j: any) => j.id === bid.jobId) || {};
+                            return (
+                              <TableRow key={bid.id}>
+                                <TableCell className="font-medium">{job.title || 'Job Title'}</TableCell>
+                                <TableCell>{job.vehicle || 'Vehicle Info'}</TableCell>
+                                <TableCell>{job.location || 'Location'}</TableCell>
+                                <TableCell>
+                                  {job.mechanicArrivalVerified ? (
+                                    <Badge className="bg-green-100 text-green-800">
+                                      ✓ Verified
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-amber-100 text-amber-800">
+                                      Pending Arrival
+                                    </Badge>
                                   )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2 flex-wrap">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => navigate(`/jobs/${bid.jobId}`)}
+                                    >
+                                      View Details
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="secondary"
+                                      onClick={() => navigate(`/messages?conversation=${job.userId}&jobId=${bid.jobId}`)}
+                                    >
+                                      Message Customer
+                                    </Button>
+                                    {!job.mechanicArrivalVerified && (
+                                      <ArrivalCodeGenerator jobId={bid.jobId} />
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </div>
