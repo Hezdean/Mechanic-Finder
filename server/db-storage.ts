@@ -498,9 +498,14 @@ export class DbStorage implements IStorage {
   }
 
   async listMessagesByUserId(userId: number): Promise<Message[]> {
-    return await db.select().from(messages)
+    console.log('DEBUG: DbStorage.listMessagesByUserId called with userId:', userId);
+    console.log('DEBUG: About to execute database query for messages...');
+    const result = await db.select().from(messages)
       .where(or(eq(messages.senderId, userId), eq(messages.receiverId, userId)))
       .orderBy(desc(messages.createdAt));
+    console.log('DEBUG: DbStorage.listMessagesByUserId found', result.length, 'messages');
+    console.log('DEBUG: First few message IDs:', result.slice(0, 3).map(m => m.id));
+    return result;
   }
 
   async listMessagesByConversation(userId1: number, userId2: number): Promise<Message[]> {

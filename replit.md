@@ -134,6 +134,8 @@ Changelog:
 - July 2, 2025. Implemented real-time database updates with WebSocket integration for live job notifications
 - July 2, 2025. Modified payment flow - car owners now make payments only after verifying mechanic arrival
 - July 2, 2025. Implemented comprehensive mobile-first onboarding experience with step-by-step user guidance, role selection, account creation, profile completion, location services, and notification setup
+- July 2, 2025. Fixed critical messages system issue by switching from MemStorage to DbStorage for persistent data access
+- July 2, 2025. Resolved arrival verification database schema inconsistencies by adding missing columns (job_id, is_used) and fixing constraints
 ```
 
 ## User Preferences

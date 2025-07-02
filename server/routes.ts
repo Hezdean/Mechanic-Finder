@@ -1365,6 +1365,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/messages', authenticateToken, async (req, res) => {
     try {
       let messages;
+      const currentUserId = req.user!.userId;
+      console.log('DEBUG: Messages API called for user:', currentUserId);
+      console.log('DEBUG: Query params:', req.query);
       
       if (req.query.jobId) {
         const jobId = parseInt(req.query.jobId as string);
@@ -1394,7 +1397,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages = await storage.listMessagesByConversation(req.user!.userId, otherUserId);
       } else {
         // Default to getting current user's messages
-        messages = await storage.listMessagesByUserId(req.user!.userId);
+        console.log('DEBUG: Calling listMessagesByUserId for user:', currentUserId);
+        console.log('DEBUG: Storage instance type:', storage.constructor.name);
+        messages = await storage.listMessagesByUserId(currentUserId);
+        console.log('DEBUG: Retrieved messages count:', messages.length);
+        console.log('DEBUG: First message sample:', messages[0] ? JSON.stringify(messages[0], null, 2) : 'No messages');
       }
       
       // Get user data for each message
