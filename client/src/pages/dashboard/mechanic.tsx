@@ -60,6 +60,7 @@ import {
   CheckCircle, 
   AlertCircle, 
   MessageSquare,
+  MapPin,
   UserCheck,
   FileText,
   Award,
@@ -115,14 +116,14 @@ const MechanicDashboard = () => {
   // Open jobs query (jobs that a mechanic can bid on)
   const { data: openJobs, isLoading: isLoadingOpenJobs } = useQuery({
     queryKey: ['/api/jobs'],
-    select: (data) => data?.filter((job: any) => job.status === 'open') || []
+    select: (data) => Array.isArray(data) ? data.filter((job: any) => job.status === 'open') : []
   });
 
   // Notifications query for bid acceptances
   const { data: notifications, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['/api/messages/unread'],
     refetchInterval: 30000, // Poll every 30 seconds for new notifications
-    select: (data) => data?.filter((msg: any) => msg.type === 'bid_accepted') || []
+    select: (data) => Array.isArray(data) ? data.filter((msg: any) => msg.type === 'bid_accepted') : []
   });
 
   // My bids query
@@ -169,11 +170,8 @@ const MechanicDashboard = () => {
     enabled: !!profile && !!user.id,
   });
 
-  // Active jobs query (jobs that this mechanic is working on)
-  const { data: activeJobs, isLoading: isLoadingActiveJobs } = useQuery({
-    queryKey: ['/api/jobs?status=in_progress'],
-    select: (data) => data?.filter((job: any) => job.assignedMechanicId === user.id)
-  });
+  // Active jobs (jobs where my bid was accepted)
+  const activeJobs = Array.isArray(myBids) ? myBids.filter((bid: any) => bid.status === 'accepted') : [];
 
   // Create profile mutation
   const createProfileMutation = useMutation({
@@ -300,7 +298,6 @@ const MechanicDashboard = () => {
     
     const processedData = {
       jobId: selectedJobId,
-      mechanicId: user.id,
       amount: parseInt(data.amount),
       description: data.description,
       estimatedTime: data.estimatedTime,
@@ -846,7 +843,7 @@ const MechanicDashboard = () => {
                     </div>
                   ) : isLoadingOpenJobs ? (
                     <div className="text-center py-6">Loading available jobs...</div>
-                  ) : openJobs?.length ? (
+                  ) : openJobs && openJobs.length > 0 ? (
                     <div className="rounded-md border">
                       <Table>
                         <TableHeader>

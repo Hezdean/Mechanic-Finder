@@ -1051,24 +1051,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Job not found" });
       }
       
-      // Only allow current mechanic to create their own bid
-      if (req.body.mechanicId !== req.user!.userId) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
+      // Set mechanicId from authenticated user
+      const bidData = {
+        ...req.body,
+        mechanicId: req.user!.userId
+      };
       
       // Check if mechanic already placed a bid
       const existingBids = await storage.listBidsByJobId(req.body.jobId);
-      if (existingBids.some(bid => bid.mechanicId === req.body.mechanicId)) {
+      if (existingBids.some(bid => bid.mechanicId === req.user!.userId)) {
         return res.status(400).json({ message: "You already placed a bid on this job" });
       }
       
-      const bid = await storage.createBid(req.body);
+      const bid = await storage.createBid(bidData);
       
       // Broadcast new bid to job owner in real-time
       if ((global as any).broadcast) {
-        const job = await storage.getJob(req.body.jobId);
-        const mechanic = await storage.getUser(req.body.mechanicId);
-        const mechanicProfile = await storage.getMechanicProfileByUserId(req.body.mechanicId);
+        const job = await storage.getJob(bidData.jobId);
+        const mechanic = await storage.getUser(bidData.mechanicId);
+        const mechanicProfile = await storage.getMechanicProfileByUserId(bidData.mechanicId);
         
         (global as any).broadcast('bid_received', {
           bid,
