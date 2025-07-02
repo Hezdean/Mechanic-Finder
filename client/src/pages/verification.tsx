@@ -1,180 +1,179 @@
-import { Helmet } from "react-helmet";
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { EmailVerification } from "@/components/verification/EmailVerification";
-import { PhoneVerification } from "@/components/verification/PhoneVerification";
+import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ArrivalVerification from "@/components/verification/ArrivalVerification";
+import MechanicCodeGenerator from "@/components/verification/MechanicCodeGenerator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Shield, CheckCircle2, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Shield, Users, MapPin } from "lucide-react";
 
-export default function VerificationPage() {
+const VerificationPage = () => {
   const { user } = useAuth();
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const [jobIdInput, setJobIdInput] = useState("");
 
-  if (!user) {
-    return (
-      <>
-        <Helmet>
-          <title>Verification - Mechanic Finder</title>
-        </Helmet>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-            <p className="text-gray-600">Please log in to access verification settings.</p>
-          </div>
-        </div>
-      </>
-    );
-  }
+  const handleSetJobId = () => {
+    const jobId = parseInt(jobIdInput);
+    if (jobId && jobId > 0) {
+      setSelectedJobId(jobId);
+    }
+  };
 
-  const emailVerified = user.emailVerified;
-  const phoneVerified = user.phoneVerified;
-  const allVerified = emailVerified && phoneVerified;
+  const isMechanic = user?.role === "mechanic" || user?.role === "admin";
+  const isCustomer = user?.role === "car_owner" || user?.role === "admin";
 
   return (
     <>
       <Helmet>
-        <title>Account Verification - Mechanic Finder</title>
-        <meta name="description" content="Verify your email and phone number to secure your Mechanic Finder account and build trust with other users." />
+        <title>Arrival Verification - Mechanic Finder</title>
+        <meta name="description" content="Verify mechanic arrivals and generate arrival codes for secure service verification." />
       </Helmet>
 
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <Shield className="h-12 w-12 text-blue-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Verification</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Verify your email and phone number to enhance security and build trust with other users on the platform.
+            <h1 className="text-3xl font-bold mb-4">Arrival Verification</h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Secure verification system to confirm mechanic arrivals and ensure safe service delivery.
             </p>
           </div>
 
-          {/* Verification Status Overview */}
+          {/* Job ID Selection */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Verification Status
-                {allVerified && <CheckCircle2 className="h-5 w-5 text-green-600" />}
-                {!allVerified && <AlertCircle className="h-5 w-5 text-amber-600" />}
+              <CardTitle className="flex items-center">
+                <MapPin className="mr-2 h-5 w-5" />
+                Select Job
               </CardTitle>
               <CardDescription>
-                Your current verification status for enhanced security
+                Enter the job ID to access verification tools for that specific service request.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">Email Verification</h3>
-                    <p className="text-sm text-gray-600">{user.email}</p>
-                  </div>
-                  <Badge variant={emailVerified ? "default" : "secondary"}>
-                    {emailVerified ? "Verified" : "Pending"}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">Phone Verification</h3>
-                    <p className="text-sm text-gray-600">
-                      {user.phone || "No phone number"}
-                    </p>
-                  </div>
-                  <Badge variant={phoneVerified ? "default" : "secondary"}>
-                    {phoneVerified ? "Verified" : "Pending"}
-                  </Badge>
-                </div>
+              <div className="flex space-x-2">
+                <Input
+                  type="number"
+                  placeholder="Enter Job ID (e.g., 123)"
+                  value={jobIdInput}
+                  onChange={(e) => setJobIdInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleSetJobId} disabled={!jobIdInput.trim()}>
+                  Select Job
+                </Button>
               </div>
-              
-              {allVerified && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span className="font-medium text-green-800">
-                      Account Fully Verified
-                    </span>
-                  </div>
-                  <p className="text-sm text-green-700 mt-1">
-                    Great! Your account is fully verified and trusted on the platform.
-                  </p>
-                </div>
+              {selectedJobId && (
+                <p className="text-sm text-green-600 mt-2">
+                  ✓ Job #{selectedJobId} selected
+                </p>
               )}
             </CardContent>
           </Card>
 
-          {/* Verification Tabs */}
-          <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="email" className="flex items-center gap-2">
-                Email
-                {emailVerified && <CheckCircle2 className="h-4 w-4" />}
-              </TabsTrigger>
-              <TabsTrigger value="phone" className="flex items-center gap-2">
-                Phone
-                {phoneVerified && <CheckCircle2 className="h-4 w-4" />}
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="email" className="flex justify-center mt-6">
-              <EmailVerification 
-                isVerified={emailVerified}
-                onSuccess={() => window.location.reload()}
-              />
-            </TabsContent>
-            
-            <TabsContent value="phone" className="flex justify-center mt-6">
-              <PhoneVerification 
-                isVerified={phoneVerified}
-                phoneNumber={user.phone}
-                onSuccess={() => window.location.reload()}
-              />
-            </TabsContent>
-          </Tabs>
+          {selectedJobId && (
+            <Tabs defaultValue={isCustomer ? "verify" : "generate"} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                {isCustomer && (
+                  <TabsTrigger value="verify" className="flex items-center">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Verify Arrival
+                  </TabsTrigger>
+                )}
+                {isMechanic && (
+                  <TabsTrigger value="generate" className="flex items-center">
+                    <Users className="mr-2 h-4 w-4" />
+                    Generate Code
+                  </TabsTrigger>
+                )}
+              </TabsList>
 
-          {/* Trust Benefits */}
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>Benefits of Verification</CardTitle>
-              <CardDescription>
-                Why verifying your account enhances your experience
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Shield className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 className="font-medium mb-2">Enhanced Security</h3>
-                  <p className="text-sm text-gray-600">
-                    Protect your account with verified contact information
-                  </p>
+              {isCustomer && (
+                <TabsContent value="verify" className="mt-6">
+                  <ArrivalVerification 
+                    jobId={selectedJobId}
+                    onVerificationSuccess={() => {
+                      // Optionally refresh job status or show success message
+                    }}
+                  />
+                </TabsContent>
+              )}
+
+              {isMechanic && (
+                <TabsContent value="generate" className="mt-6">
+                  <MechanicCodeGenerator 
+                    jobId={selectedJobId}
+                    customerName="Customer" // Could be fetched from job details
+                  />
+                </TabsContent>
+              )}
+            </Tabs>
+          )}
+
+          {!selectedJobId && (
+            <Card>
+              <CardHeader className="text-center">
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                  <Shield className="h-6 w-6 text-blue-600" />
                 </div>
-                
-                <div className="text-center">
-                  <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <CheckCircle2 className="h-6 w-6 text-green-600" />
+                <CardTitle>How Arrival Verification Works</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-green-700">For Mechanics:</h3>
+                      <ol className="text-sm space-y-2 text-muted-foreground">
+                        <li className="flex items-start space-x-2">
+                          <span className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">1</span>
+                          <span>Generate arrival code before heading to customer location</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">2</span>
+                          <span>Share the code with customer upon arrival</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">3</span>
+                          <span>Begin work once customer verifies your arrival</span>
+                        </li>
+                      </ol>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-blue-700">For Customers:</h3>
+                      <ol className="text-sm space-y-2 text-muted-foreground">
+                        <li className="flex items-start space-x-2">
+                          <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">1</span>
+                          <span>Wait for mechanic to arrive at your location</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">2</span>
+                          <span>Request arrival verification code from mechanic</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">3</span>
+                          <span>Enter code to confirm mechanic's presence</span>
+                        </li>
+                      </ol>
+                    </div>
                   </div>
-                  <h3 className="font-medium mb-2">Build Trust</h3>
-                  <p className="text-sm text-gray-600">
-                    Verified accounts are more trusted by other users
-                  </p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <AlertCircle className="h-6 w-6 text-purple-600" />
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-6">
+                    <h4 className="font-semibold text-amber-800 mb-2">Security Notice</h4>
+                    <p className="text-sm text-amber-700">
+                      Only verify arrivals when the mechanic is physically present at your location. 
+                      This system helps ensure your safety and prevents fraudulent service claims.
+                    </p>
                   </div>
-                  <h3 className="font-medium mb-2">Important Notifications</h3>
-                  <p className="text-sm text-gray-600">
-                    Receive alerts about your jobs and transactions
-                  </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </>
   );
-}
+};
+
+export default VerificationPage;
