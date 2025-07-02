@@ -298,16 +298,18 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   }),
 }));
 
-// Verification codes table for email and phone verification
+// Verification codes table for email, phone, and arrival verification
 export const verificationCodes = pgTable("verification_codes", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
   code: text("code").notNull(),
-  type: text("type").notNull(), // 'email' or 'phone'
-  purpose: text("purpose").notNull(), // 'verification', 'password_reset', etc.
+  type: text("type").notNull(), // 'email', 'phone', 'arrival_verification'
+  purpose: text("purpose"), // 'verification', 'password_reset', etc. (optional for arrival codes)
   email: text("email"),
   phone: text("phone"),
+  jobId: integer("job_id").references(() => jobs.id), // For arrival verification codes
   expiresAt: timestamp("expires_at").notNull(),
+  isUsed: boolean("is_used").default(false),
   usedAt: timestamp("used_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -315,6 +317,7 @@ export const verificationCodes = pgTable("verification_codes", {
 export const verificationCodeInsertSchema = createInsertSchema(verificationCodes).omit({
   id: true,
   createdAt: true,
+  usedAt: true,
 });
 
 export type VerificationCodeInsert = z.infer<typeof verificationCodeInsertSchema>;
@@ -322,6 +325,7 @@ export type VerificationCode = typeof verificationCodes.$inferSelect;
 
 export const verificationCodesRelations = relations(verificationCodes, ({ one }) => ({
   user: one(users, { fields: [verificationCodes.userId], references: [users.id] }),
+  job: one(jobs, { fields: [verificationCodes.jobId], references: [jobs.id] }),
 }));
 
 // New tables for enhanced features

@@ -1626,6 +1626,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Arrival verification system endpoints
+  app.post('/api/jobs/:id/generate-arrival-code', authenticateToken, hasAnyRole(['mechanic']), async (req, res) => {
+    try {
+      const jobId = parseInt(req.params.id);
+      const mechanicId = req.user!.userId;
+      
+      // Verify the job exists and mechanic is assigned
+      const job = await storage.getJob(jobId);
+      if (!job) {
+        return res.status(404).json({ success: false, message: "Job not found" });
+      }
+      
+      if (job.assignedMechanicId !== mechanicId) {
+        return res.status(403).json({ success: false, message: "You are not assigned to this job" });
+      }
+      
+      if (job.status !== 'in_progress') {
+        return res.status(400).json({ success: false, message: "Job must be in progress to generate arrival codes" });
+      }
+      
+      // Generate a secure 6-character alphanumeric code
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let arrivalCode = '';
+      for (let i = 0; i < 6; i++) {
+        arrivalCode += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      
+      // Store the verification code with expiration (30 minutes)
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+      
+      const verificationCode = await storage.createVerificationCode({
+        type: 'arrival_verification',
+        code: arrivalCode,
+        userId: mechanicId,
+        jobId: jobId,
+        expiresAt: expiresAt,
+        isUsed: false
+      });
+      
+      res.json({ 
+        success: true, 
+        code: arrivalCode,
+        expiresAt: expiresAt.toISOString(),
+        message: "Arrival code generated successfully" 
+      });
+      
+    } catch (error) {
+      console.error('Arrival code generation error:', error);
+      res.status(500).json({ success: false, message: "Failed to generate arrival code" });
+    }
+  });
+
+  app.post('/api/jobs/:id/verify-arrival', authenticateToken, async (req, res) => {
+    try {
+      const jobId = parseInt(req.params.id);
+      const { code } = req.body;
+      const customerId = req.user!.userId;
+      
+      if (!code) {
+        return res.status(400).json({ success: false, message: "Verification code is required" });
+      }
+      
+      // Verify the job exists and user is the customer
+      const job = await storage.getJob(jobId);
+      if (!job) {
+        return res.status(404).json({ success: false, message: "Job not found" });
+      }
+      
+      if (job.userId !== customerId) {
+        return res.status(403).json({ success: false, message: "You are not authorized to verify arrival for this job" });
+      }
+      
+      // Find the verification code
+      const verificationCode = await storage.getVerificationCodeByToken(code.toUpperCase());
+      
+      if (!verificationCode) {
+        return res.status(400).json({ success: false, message: "Invalid verification code" });
+      }
+      
+      // Check if code matches this job
+      if (verificationCode.jobId !== jobId) {
+        return res.status(400).json({ success: false, message: "Verification code does not match this job" });
+      }
+      
+      // Check if code is expired
+      if (new Date() > new Date(verificationCode.expiresAt)) {
+        return res.status(400).json({ success: false, message: "Verification code has expired" });
+      }
+      
+      // Check if code is already used
+      if (verificationCode.isUsed) {
+        return res.status(400).json({ success: false, message: "Verification code has already been used" });
+      }
+      
+      // Mark the code as used
+      await storage.updateVerificationCode(verificationCode.id, { isUsed: true });
+      
+      // Update job status to indicate mechanic has arrived
+      await storage.updateJob(jobId, { 
+        status: 'on_site',
+        mechanicArrivedAt: new Date()
+      });
+      
+      // Get mechanic details for response
+      const mechanic = await storage.getUser(verificationCode.userId);
+      
+      // Send success message to both parties
+      await storage.createMessage({
+        senderId: customerId,
+        receiverId: verificationCode.userId,
+        jobId: jobId,
+        content: `✅ Arrival verified! The mechanic has been confirmed on-site and can now begin work.`
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Mechanic arrival verified successfully",
+        mechanic: {
+          name: `${mechanic?.firstName} ${mechanic?.lastName}`,
+          arrivedAt: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error('Arrival verification error:', error);
+      res.status(500).json({ success: false, message: "Failed to verify arrival" });
+    }
+  });
+
   // Enhance existing API endpoints to broadcast real-time updates
 
   // Store broadcast function globally for use in existing route handlers
