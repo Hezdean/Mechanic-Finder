@@ -76,34 +76,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { username, password } = req.body;
-      console.log('Login attempt for username:', username);
       
       if (!username || !password) {
-        console.log('Missing username or password');
         return res.status(400).json({ message: "Username and password are required" });
       }
 
       const user = await storage.getUserByUsername(username);
       if (!user) {
-        console.log('User not found:', username);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      console.log('User found:', user.username, 'stored password hash:', user.password?.substring(0, 10) + '...');
-      console.log('Attempting password comparison with input:', password);
-
       // Verify password with bcrypt
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Password valid:', isPasswordValid);
-      
       if (!isPasswordValid) {
-        console.log('Password verification failed for user:', username);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       // Generate JWT token
       const token = generateToken(user);
-      console.log('Login successful for user:', username);
       
       // Return user info (without password) and token
       const { password: _, ...userResponse } = user;
@@ -113,7 +103,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresIn: "7d"
       });
     } catch (error) {
-      console.error('Login error:', error);
       res.status(500).json({ message: "Login failed", error });
     }
   });
