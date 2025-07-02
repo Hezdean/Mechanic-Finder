@@ -1172,19 +1172,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const acceptedBid = await storage.acceptBid(bidId);
       
       // Update job status to 'in_progress' and assign mechanic
-      await storage.updateJob(job.id, {
+      const updatedJob = await storage.updateJob(job.id, {
         status: 'in_progress',
         assignedMechanicId: bid.mechanicId
       });
       
-      // Create notification message for the mechanic
+      // Get mechanic and job owner details for notifications
+      const mechanic = await storage.getUser(bid.mechanicId);
       const jobOwner = await storage.getUser(job.userId);
+      
+      // Create notification message for the mechanic
       const notificationMessage = await storage.createMessage({
         senderId: job.userId,
         receiverId: bid.mechanicId,
         jobId: job.id,
-        content: `Great news! Your bid for "${job.title}" has been accepted by ${jobOwner?.firstName} ${jobOwner?.lastName}. The job is now assigned to you. Please contact the customer to coordinate the repair work.`
+        content: `🎉 Congratulations! Your bid for "${job.title}" has been accepted by ${jobOwner?.firstName} ${jobOwner?.lastName}. The job is now assigned to you. Next steps: 1) Contact the customer to coordinate timing, 2) When you arrive on-site, generate your arrival verification code to confirm your presence.`
       });
+      
+      // Broadcast bid acceptance to mechanic with real-time notification
+      if ((global as any).broadcast) {
+        (global as any).broadcast('bid_accepted', {
+          bid: acceptedBid,
+          job: updatedJob,
+          mechanic: mechanic,
+          message: `Your bid for "${job.title}" has been accepted! Contact the customer and generate arrival code when on-site.`
+        }, bid.mechanicId);
+      }
       
       // Reject all other bids for this job
       const allBids = await storage.listBidsByJobId(job.id);

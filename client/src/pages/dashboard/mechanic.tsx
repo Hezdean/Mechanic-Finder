@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/hooks/use-auth";
@@ -95,6 +95,7 @@ const MechanicDashboard = () => {
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [isBidFormOpen, setIsBidFormOpen] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const queryClient = useQueryClient();
 
   // Redirect if not mechanic
   if (!user || user.role !== "mechanic") {
@@ -305,6 +306,66 @@ const MechanicDashboard = () => {
     };
     
     createBidMutation.mutate(processedData);
+  };
+
+  // Arrival Code Generator Component
+  const ArrivalCodeGenerator = ({ jobId }: { jobId: number }) => {
+    const [code, setCode] = useState<string | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const generateCode = async () => {
+      setIsGenerating(true);
+      try {
+        const response = await fetch(`/api/jobs/${jobId}/generate-arrival-code`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate code');
+        }
+
+        const data = await response.json();
+        setCode(data.code);
+        
+        toast({
+          title: "Arrival Code Generated",
+          description: `Your arrival code: ${data.code}. Share this with the customer to verify your presence.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to generate arrival code. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    return (
+      <div className="flex flex-col gap-2">
+        {!code ? (
+          <Button 
+            size="sm" 
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={generateCode}
+            disabled={isGenerating}
+          >
+            {isGenerating ? "Generating..." : "I'm On-Site"}
+          </Button>
+        ) : (
+          <div className="flex flex-col gap-1">
+            <div className="text-sm font-mono bg-purple-100 px-2 py-1 rounded border">
+              Code: <strong>{code}</strong>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Share this code with customer
+            </p>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const handleBidOnJob = (jobId: number) => {
@@ -597,7 +658,7 @@ const MechanicDashboard = () => {
                             <TableHead>Job Title</TableHead>
                             <TableHead>Vehicle</TableHead>
                             <TableHead>Location</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Arrival Status</TableHead>
                             <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -608,26 +669,35 @@ const MechanicDashboard = () => {
                               <TableCell>{job.vehicle}</TableCell>
                               <TableCell>{job.location}</TableCell>
                               <TableCell>
-                                <Badge className="bg-amber-100 text-amber-800">
-                                  In Progress
-                                </Badge>
+                                {job.mechanicArrivalVerified ? (
+                                  <Badge className="bg-green-100 text-green-800">
+                                    ✓ Verified
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-amber-100 text-amber-800">
+                                    Pending Arrival
+                                  </Badge>
+                                )}
                               </TableCell>
                               <TableCell>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap">
                                   <Button 
                                     size="sm" 
                                     variant="outline"
                                     onClick={() => navigate(`/jobs/${job.id}`)}
                                   >
-                                    View
+                                    View Details
                                   </Button>
                                   <Button 
                                     size="sm" 
                                     variant="secondary"
-                                    onClick={() => navigate(`/messages?jobId=${job.id}`)}
+                                    onClick={() => navigate(`/messages?conversation=${job.userId}&jobId=${job.id}`)}
                                   >
-                                    Message
+                                    Message Customer
                                   </Button>
+                                  {!job.mechanicArrivalVerified && (
+                                    <ArrivalCodeGenerator jobId={job.id} />
+                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>
