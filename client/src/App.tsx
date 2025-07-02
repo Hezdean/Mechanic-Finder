@@ -27,7 +27,7 @@ import Mechanics from "@/pages/mechanics/index";
 import MechanicProfile from "@/pages/mechanics/[id]";
 import Messages from "@/pages/messages/index";
 import TransactionHistory from "@/pages/transaction-history";
-import Verification from "@/pages/verification";
+import VerificationPage from "@/pages/verification";
 import DiagnosticsPage from "@/pages/diagnostics";
 import EmergencyPage from "@/pages/emergency";
 import BookingPage from "@/pages/booking";
@@ -71,7 +71,7 @@ function Router() {
         <Route path="/mechanics/:id" component={MechanicProfile} />
         <Route path="/messages" component={Messages} />
         <Route path="/transactions" component={TransactionHistory} />
-        <Route path="/verification" component={Verification} />
+        <Route path="/verification" component={VerificationPage} />
         <Route path="/diagnostics" component={DiagnosticsPage} />
         <Route path="/emergency" component={EmergencyPage} />
         <Route path="/booking" component={BookingPage} />
