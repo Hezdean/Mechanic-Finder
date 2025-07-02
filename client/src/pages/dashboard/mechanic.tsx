@@ -126,52 +126,46 @@ const MechanicDashboard = () => {
     select: (data) => Array.isArray(data) ? data : []
   });
 
-  // My bids query
+  // My bids query - fetch directly from mechanic bids endpoint
   const { data: myBids, isLoading: isLoadingMyBids } = useQuery({
-    queryKey: [`/api/mechanic-profiles/user/${user.id}`, user.id],
-    queryFn: async () => {
-      // First check if profile exists
-      if (!profile) return [];
-      
-      // Get all jobs
-      const response = await fetch('/api/jobs', {
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch jobs");
-      }
-      
-      const allJobs = await response.json();
-      
-      // Get bids for each job and filter to only include this mechanic's bids
-      const bidsPromises = allJobs.map(async (job: any) => {
-        try {
-          const bidsResponse = await fetch(`/api/jobs/${job.id}/bids`, {
-            credentials: 'include'
-          });
-          
-          if (!bidsResponse.ok) return null;
-          
-          const bids = await bidsResponse.json();
-          return bids.filter((bid: any) => bid.mechanicId === user.id)
-            .map((bid: any) => ({
-              ...bid,
-              job
-            }));
-        } catch (error) {
-          return null;
-        }
-      });
-      
-      const bidsArrays = await Promise.all(bidsPromises);
-      return bidsArrays.flat().filter(Boolean);
-    },
+    queryKey: ['/api/mechanic/bids'],
     enabled: !!profile && !!user.id,
   });
 
+  // Enhance bids with job details
+  const { data: myBidsWithJobs, isLoading: isLoadingBidsWithJobs } = useQuery({
+    queryKey: ['/api/mechanic/bids', 'with-jobs'],
+    queryFn: async () => {
+      if (!myBids?.length) return [];
+      
+      // Get job details for each bid
+      const bidsWithJobs = await Promise.all(
+        myBids.map(async (bid: any) => {
+          try {
+            const jobResponse = await fetch(`/api/jobs/${bid.jobId}`, {
+              credentials: 'include'
+            });
+            
+            if (!jobResponse.ok) return { ...bid, job: null };
+            
+            const job = await jobResponse.json();
+            return { ...bid, job };
+          } catch (error) {
+            return { ...bid, job: null };
+          }
+        })
+      );
+      
+      return bidsWithJobs.filter(bid => bid.job !== null);
+    },
+    enabled: !!myBids?.length,
+  });
+
+  // Use enhanced bids with job details
+  const allMyBids = myBidsWithJobs || myBids || [];
+  
   // Active jobs (jobs where my bid was accepted)
-  const activeJobs = Array.isArray(myBids) ? myBids.filter((bid: any) => bid.status === 'accepted') : [];
+  const activeJobs = Array.isArray(allMyBids) ? allMyBids.filter((bid: any) => bid.status === 'accepted') : [];
 
   // Create profile mutation
   const createProfileMutation = useMutation({
@@ -696,9 +690,9 @@ const MechanicDashboard = () => {
         {profile && (
           <Tabs defaultValue="active-jobs" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">
-              <TabsTrigger value="active-jobs">Active Jobs</TabsTrigger>
-              <TabsTrigger value="my-bids">My Bids</TabsTrigger>
-              <TabsTrigger value="available-jobs">Available Jobs</TabsTrigger>
+              <TabsTrigger value="active-jobs">Active Jobs ({activeJobs.length})</TabsTrigger>
+              <TabsTrigger value="my-bids">My Bids ({allMyBids.length})</TabsTrigger>
+              <TabsTrigger value="available-jobs">Available Jobs ({openJobs.length})</TabsTrigger>
               <TabsTrigger value="mechanic-profile">Mechanic Profile</TabsTrigger>
             </TabsList>
             
@@ -715,7 +709,7 @@ const MechanicDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {isLoadingMyBids ? (
+                  {isLoadingMyBids || isLoadingBidsWithJobs ? (
                     <div className="text-center py-6">Loading active jobs...</div>
                   ) : activeJobs?.length ? (
                     <div className="rounded-md border">
@@ -802,9 +796,9 @@ const MechanicDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {isLoadingMyBids ? (
+                  {isLoadingMyBids || isLoadingBidsWithJobs ? (
                     <div className="text-center py-6">Loading your bids...</div>
-                  ) : myBids?.length ? (
+                  ) : allMyBids?.length ? (
                     <div className="rounded-md border">
                       <Table>
                         <TableHeader>
@@ -817,9 +811,9 @@ const MechanicDashboard = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {myBids.map((bid: any) => (
+                          {allMyBids.map((bid: any) => (
                             <TableRow key={bid.id}>
-                              <TableCell className="font-medium">{bid.job.title}</TableCell>
+                              <TableCell className="font-medium">{bid.job?.title || 'Job Details Unavailable'}</TableCell>
                               <TableCell>{formatCurrency(bid.amount)}</TableCell>
                               <TableCell>{formatDate(bid.createdAt)}</TableCell>
                               <TableCell>
@@ -831,7 +825,8 @@ const MechanicDashboard = () => {
                                 <Button 
                                   size="sm" 
                                   variant="outline"
-                                  onClick={() => navigate(`/jobs/${bid.job.id}`)}
+                                  onClick={() => navigate(`/jobs/${bid.jobId}`)}
+                                  disabled={!bid.job}
                                 >
                                   View Job
                                 </Button>
