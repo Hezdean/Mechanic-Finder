@@ -70,7 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Get current user (only if we have a token)
   const { isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
-    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!token,
     staleTime: 300000, // 5 minutes
   });

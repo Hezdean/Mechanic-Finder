@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { z } from "zod";
 import { 
@@ -940,6 +941,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const job = await storage.createJob(req.body);
+      
+      // Broadcast new job to all mechanics in real-time
+      if ((global as any).broadcast) {
+        (global as any).broadcast('job_created', job, undefined, 'mechanic');
+      }
+      
       res.status(201).json(job);
     } catch (error) {
       res.status(500).json({ message: "Error creating job", error });
@@ -1056,6 +1063,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const bid = await storage.createBid(req.body);
+      
+      // Broadcast new bid to job owner in real-time
+      if ((global as any).broadcast) {
+        const job = await storage.getJob(req.body.jobId);
+        const mechanic = await storage.getUser(req.body.mechanicId);
+        const mechanicProfile = await storage.getMechanicProfileByUserId(req.body.mechanicId);
+        
+        (global as any).broadcast('bid_received', {
+          bid,
+          job,
+          mechanic: {
+            ...mechanic,
+            profile: mechanicProfile
+          }
+        }, job?.userId);
+      }
+      
       res.status(201).json(bid);
     } catch (error) {
       res.status(500).json({ message: "Error creating bid", error });
@@ -1504,6 +1528,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error updating transaction", error });
     }
   });
+
+  // Create WebSocket server for real-time updates
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  // Store active WebSocket connections with user information
+  const clients = new Map<WebSocket, { userId: number; role: string }>();
+
+  // Broadcast function to send updates to relevant clients
+  const broadcast = (event: string, data: any, targetUserId?: number, targetRole?: string) => {
+    const message = JSON.stringify({ event, data, timestamp: new Date().toISOString() });
+    
+    clients.forEach((clientInfo, ws) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        // Send to specific user if targetUserId is provided
+        if (targetUserId && clientInfo.userId === targetUserId) {
+          ws.send(message);
+        }
+        // Send to specific role if targetRole is provided
+        else if (targetRole && clientInfo.role === targetRole) {
+          ws.send(message);
+        }
+        // Send to all if no specific target
+        else if (!targetUserId && !targetRole) {
+          ws.send(message);
+        }
+      }
+    });
+  };
+
+  // WebSocket connection handler
+  wss.on('connection', (ws, req) => {
+    console.log('WebSocket connection established');
+
+    // Handle authentication via query parameter or first message
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        if (data.type === 'auth' && data.token) {
+          const payload = verifyToken(data.token);
+          if (payload) {
+            clients.set(ws, { userId: payload.userId, role: payload.role });
+            ws.send(JSON.stringify({ 
+              event: 'auth_success', 
+              data: { userId: payload.userId, role: payload.role } 
+            }));
+            console.log(`WebSocket authenticated: User ${payload.userId} (${payload.role})`);
+          } else {
+            ws.send(JSON.stringify({ event: 'auth_error', data: { message: 'Invalid token' } }));
+            ws.close();
+          }
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      clients.delete(ws);
+      console.log('WebSocket connection closed');
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+      clients.delete(ws);
+    });
+  });
+
+  // Enhance existing API endpoints to broadcast real-time updates
+
+  // Store broadcast function globally for use in existing route handlers
+  (global as any).broadcast = broadcast;
 
   return httpServer;
 }
