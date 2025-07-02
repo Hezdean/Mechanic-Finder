@@ -228,12 +228,12 @@ export default function DiagnosticsPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {diagnosticResult.possibleCauses.map((cause, index) => (
+                    {diagnosticResult.possibleCauses?.map((cause, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-gray-700">{cause}</span>
                       </li>
-                    ))}
+                    )) || <li className="text-gray-500">No causes identified</li>}
                   </ul>
                 </CardContent>
               </Card>
@@ -248,12 +248,12 @@ export default function DiagnosticsPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {diagnosticResult.recommendedActions.map((action, index) => (
+                    {diagnosticResult.recommendedActions?.map((action, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">{action}</span>
                       </li>
-                    ))}
+                    )) || <li className="text-gray-500">No recommendations available</li>}
                   </ul>
                 </CardContent>
               </Card>

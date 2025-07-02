@@ -1,0 +1,40 @@
+[vite] connecting...
+DOMException {}
+
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of &lt;a&gt;.
+    at a
+    at a
+    at https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9dd68a10:158:18
+    at div
+    at div
+    at div
+    at div
+    at header
+    at Header (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/components/layout/Header.tsx:38:22)
+    at Router
+    at Provider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7IAXTU4.js?v=9dd68a10:38:15)
+    at TooltipProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9dd68a10:63:5)
+    at AuthProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-auth.tsx:24:32)
+    at QueryClientProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9dd68a10:2881:3)
+    at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-theme.tsx:25:3)
+    at App
+    at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/components/ui/theme-provider.tsx:25:3)
+Cannot read properties of undefined (reading 'map')
+Cannot read properties of undefined (reading 'map')
+The above error occurred in the <DiagnosticsPage> component:
+
+    at DiagnosticsPage (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/pages/diagnostics/index.tsx:66:37)
+    at Route (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9dd68a10:144:16)
+    at Switch (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9dd68a10:200:17)
+    at Router
+    at Provider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7IAXTU4.js?v=9dd68a10:38:15)
+    at TooltipProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9dd68a10:63:5)
+    at AuthProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-auth.tsx:24:32)
+    at QueryClientProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9dd68a10:2881:3)
+    at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-theme.tsx:25:3)
+    at App
+    at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/components/ui/theme-provider.tsx:25:3)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Cannot read properties of undefined (reading 'map')

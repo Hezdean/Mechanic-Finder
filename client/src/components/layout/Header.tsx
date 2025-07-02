@@ -19,6 +19,10 @@ import { Badge } from "@/components/ui/badge";
 const Header = () => {
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  
+  const navigate = (path: string) => {
+    window.location.href = path;
+  };
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -123,47 +127,37 @@ const Header = () => {
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href={getDashboardLink()}>
-                        <div className="flex cursor-pointer items-center">
-                          <User className="mr-2 h-4 w-4" />
-                          <span>Dashboard</span>
-                        </div>
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate(getDashboardLink())}>
+                      <div className="flex cursor-pointer items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                      </div>
                     </DropdownMenuItem>
                     {user?.role === "user" && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/jobs/post">
-                          <div className="flex cursor-pointer items-center">
-                            <Car className="mr-2 h-4 w-4" />
-                            <span>Post a Job</span>
-                          </div>
-                        </Link>
+                      <DropdownMenuItem onClick={() => navigate("/jobs/post")}>
+                        <div className="flex cursor-pointer items-center">
+                          <Car className="mr-2 h-4 w-4" />
+                          <span>Post a Job</span>
+                        </div>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem asChild>
-                      <Link href="/service-history">
-                        <div className="flex cursor-pointer items-center">
-                          <History className="mr-2 h-4 w-4" />
-                          <span>Service History</span>
-                        </div>
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate("/service-history")}>
+                      <div className="flex cursor-pointer items-center">
+                        <History className="mr-2 h-4 w-4" />
+                        <span>Service History</span>
+                      </div>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/messages">
-                        <div className="flex cursor-pointer items-center">
-                          <MessageSquare className="mr-2 h-4 w-4" />
-                          <span>Messages</span>
-                        </div>
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate("/messages")}>
+                      <div className="flex cursor-pointer items-center">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        <span>Messages</span>
+                      </div>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/transactions">
-                        <div className="flex cursor-pointer items-center">
-                          <Receipt className="mr-2 h-4 w-4" />
-                          <span>Transaction History</span>
-                        </div>
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate("/transactions")}>
+                      <div className="flex cursor-pointer items-center">
+                        <Receipt className="mr-2 h-4 w-4" />
+                        <span>Transaction History</span>
+                      </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
