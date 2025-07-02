@@ -244,6 +244,9 @@ export class DbStorage implements IStorage {
       budget: 300,
     });
 
+    // Set the first job to in_progress with assigned mechanic 2 for testing arrival codes
+    await this.updateJob(job1.id, { status: "in_progress", assignedMechanicId: 2 });
+    
     // Set the third job to in_progress with assigned mechanic
     await this.updateJob(job3.id, { status: "in_progress", assignedMechanicId: 1 });
     
@@ -562,7 +565,7 @@ export class DbStorage implements IStorage {
   }
 
   async getVerificationCodeByToken(token: string): Promise<VerificationCode | undefined> {
-    const result = await db.select().from(verificationCodes).where(eq(verificationCodes.token, token)).limit(1);
+    const result = await db.select().from(verificationCodes).where(eq(verificationCodes.code, token)).limit(1);
     return result[0];
   }
 
@@ -573,6 +576,33 @@ export class DbStorage implements IStorage {
 
   async deleteVerificationCode(id: number): Promise<void> {
     await db.delete(verificationCodes).where(eq(verificationCodes.id, id));
+  }
+
+  async getLatestVerificationCode(userId: number, type: string): Promise<VerificationCode | undefined> {
+    const result = await db.select().from(verificationCodes)
+      .where(and(eq(verificationCodes.userId, userId), eq(verificationCodes.type, type)))
+      .orderBy(desc(verificationCodes.createdAt))
+      .limit(1);
+    return result[0];
+  }
+
+  async markVerificationCodeUsed(id: number): Promise<VerificationCode | undefined> {
+    const result = await db.update(verificationCodes)
+      .set({ isUsed: true, usedAt: new Date() })
+      .where(eq(verificationCodes.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Service history methods
+  async createServiceHistory(history: any): Promise<any> { 
+    // TODO: Implement when service history is needed
+    throw new Error("Not implemented"); 
+  }
+  
+  async listServiceHistoryByUserId(userId: number): Promise<any[]> { 
+    // TODO: Implement when service history is needed
+    return []; 
   }
 
   // Placeholder methods for unimplemented interfaces

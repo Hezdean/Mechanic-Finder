@@ -1638,6 +1638,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ success: false, message: "Job not found" });
       }
       
+      console.log('DEBUG: Job data from storage:', JSON.stringify(job, null, 2));
+      console.log('DEBUG: mechanicId from token:', mechanicId);
+      console.log('DEBUG: job.assignedMechanicId:', job.assignedMechanicId);
+      
       if (job.assignedMechanicId !== mechanicId) {
         return res.status(403).json({ success: false, message: "You are not assigned to this job" });
       }
@@ -1725,8 +1729,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update job status to indicate mechanic has arrived
       await storage.updateJob(jobId, { 
-        status: 'on_site',
-        mechanicArrivedAt: new Date()
+        status: 'on_site'
       });
       
       // Get mechanic details for response
