@@ -74,7 +74,7 @@ export default function DiagnosticsPage() {
         method: 'POST',
         body: JSON.stringify(data)
       });
-      return response;
+      return await response.json();
     },
     onSuccess: (result) => {
       console.log('Diagnostic API Response:', result);
