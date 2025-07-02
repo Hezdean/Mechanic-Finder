@@ -1043,7 +1043,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bid routes - only mechanics can bid
-  app.post('/api/bids', authenticateToken, validateRequest(bidInsertSchema), async (req, res) => {
+  app.post('/api/bids', authenticateToken, async (req, res) => {
     try {
       // Check if job exists
       const job = await storage.getJob(req.body.jobId);
@@ -1051,11 +1051,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Job not found" });
       }
       
-      // Set mechanicId from authenticated user
+      // Prepare bid data with mechanicId from authenticated user
       const bidData = {
-        ...req.body,
-        mechanicId: req.user!.userId
+        jobId: req.body.jobId,
+        mechanicId: req.user!.userId,
+        amount: req.body.amount,
+        description: req.body.description || req.body.notes || "", // Support both description and notes
+        estimatedTime: req.body.estimatedTime || req.body.estimatedHours?.toString() || null
       };
+      
+      // Validate required fields
+      if (!bidData.jobId || !bidData.amount || !bidData.description) {
+        return res.status(400).json({ 
+          message: "Missing required fields: jobId, amount, and description are required" 
+        });
+      }
       
       // Check if mechanic already placed a bid
       const existingBids = await storage.listBidsByJobId(req.body.jobId);

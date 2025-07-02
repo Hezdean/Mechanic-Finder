@@ -303,6 +303,7 @@ const MechanicDashboard = () => {
       estimatedTime: data.estimatedTime,
     };
     
+    console.log("Submitting bid with data:", processedData);
     createBidMutation.mutate(processedData);
   };
 
