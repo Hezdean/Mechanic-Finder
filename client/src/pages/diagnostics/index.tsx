@@ -21,7 +21,7 @@ import {
   Shield,
   AlertCircle
 } from "lucide-react";
-import { navigate } from "wouter/use-browser-location";
+import { useLocation } from "wouter";
 
 interface DiagnosticResponse {
   possibleCauses: string[];
@@ -64,7 +64,7 @@ export default function DiagnosticsPage() {
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
-    navigate("/login");
+    window.location.href = "/login";
     return null;
   }
 
