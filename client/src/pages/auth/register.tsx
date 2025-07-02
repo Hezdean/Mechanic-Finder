@@ -31,6 +31,7 @@ const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Please enter a valid phone number").optional().or(z.literal("")),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   role: z.string().refine(val => ["user", "mechanic"].includes(val), {
@@ -57,6 +58,7 @@ const Register = () => {
       username: "",
       password: "",
       email: "",
+      phone: "",
       firstName: "",
       lastName: "",
       role: initialRole,
@@ -157,6 +159,20 @@ const Register = () => {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="john.doe@example.com" {...field} disabled={isLoading} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number (Optional)</FormLabel>
+                      <FormControl>
+                        <Input type="tel" placeholder="+1 (555) 123-4567" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

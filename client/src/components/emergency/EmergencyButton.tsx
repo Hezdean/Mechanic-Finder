@@ -194,7 +194,7 @@ export default function EmergencyButton() {
         </Button>
 
         <p className="text-xs text-center text-neutral-500">
-          For life-threatening emergencies, call 911 immediately
+          For life-threatening emergencies, call 997 immediately
         </p>
       </CardContent>
     </Card>

@@ -138,6 +138,7 @@ Changelog:
 - July 2, 2025. Resolved arrival verification database schema inconsistencies by adding missing columns (job_id, is_used) and fixing constraints
 - July 2, 2025. Completed AI vehicle diagnostic tool setup with OpenAI GPT-4o integration, comprehensive diagnostic interface, fallback system for when AI service is unavailable, and intuitive user experience with priority levels and cost estimates
 - July 2, 2025. Fixed critical AI diagnostics display issue by correcting JSON response parsing in frontend mutation, ensuring proper display of diagnostic results, causes, recommendations, and cost estimates
+- July 2, 2025. Enhanced registration form with optional phone number field for improved user contact information and verification capabilities
 ```
 
 ## User Preferences
