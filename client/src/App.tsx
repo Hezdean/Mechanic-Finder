@@ -28,7 +28,7 @@ import MechanicProfile from "@/pages/mechanics/[id]";
 import Messages from "@/pages/messages/index";
 import TransactionHistory from "@/pages/transaction-history";
 import VerificationPage from "@/pages/verification";
-import DiagnosticsPage from "@/pages/diagnostics";
+import DiagnosticsPage from "@/pages/diagnostics/index";
 import EmergencyPage from "@/pages/emergency";
 import BookingPage from "@/pages/booking";
 import ServiceHistoryPage from "@/pages/service-history";
