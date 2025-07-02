@@ -7,7 +7,8 @@ import {
   Plus, 
   AlertTriangle, 
   X,
-  ChevronUp
+  ChevronUp,
+  Zap
 } from "lucide-react";
 
 export default function FloatingActionMenu() {
@@ -30,6 +31,11 @@ export default function FloatingActionMenu() {
     setIsOpen(false);
   };
 
+  const handleDiagnostics = () => {
+    setLocation("/diagnostics");
+    setIsOpen(false);
+  };
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {isOpen && (
@@ -42,6 +48,14 @@ export default function FloatingActionMenu() {
             >
               <Plus className="mr-2 h-4 w-4" />
               Post Job
+            </Button>
+            <Button
+              onClick={handleDiagnostics}
+              className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white"
+              size="sm"
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              AI Diagnostics
             </Button>
             <Button
               onClick={handleEmergency}
