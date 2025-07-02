@@ -131,6 +131,8 @@ This is a comprehensive auto repair marketplace platform that connects car owner
 Changelog:
 - June 29, 2025. Initial setup
 - July 2, 2025. Added mechanic arrival verification system with secure code generation and customer confirmation
+- July 2, 2025. Implemented real-time database updates with WebSocket integration for live job notifications
+- July 2, 2025. Modified payment flow - car owners now make payments only after verifying mechanic arrival
 ```
 
 ## User Preferences

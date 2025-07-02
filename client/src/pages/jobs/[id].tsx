@@ -360,28 +360,69 @@ const JobDetails = () => {
                             </div>
                           )}
                           
-                          {/* Message and Payment buttons for accepted bid */}
+                          {/* Message and status for accepted bid */}
                           {isJobOwner && job.status === 'in_progress' && bid.status === 'accepted' && (
                             <div className="bg-green-100 rounded-md p-3">
                               <div className="text-green-800 font-medium mb-3">
                                 ✓ This bid has been accepted
                               </div>
-                              <div className="flex gap-3 justify-end">
-                                <Button 
-                                  variant="outline"
-                                  onClick={() => navigate(`/messages?conversation=${bid.mechanicId}&jobId=${job.id}`)}
-                                >
-                                  <MessageSquare className="mr-2 h-4 w-4" />
-                                  Message Mechanic
-                                </Button>
-                                <Button 
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                                  onClick={() => setIsPaymentFormOpen(true)}
-                                >
-                                  <DollarSign className="mr-2 h-4 w-4" />
-                                  Make Payment
-                                </Button>
-                              </div>
+                              
+                              {/* Check if mechanic arrival has been verified */}
+                              {job.mechanicArrivalVerified ? (
+                                <div className="space-y-3">
+                                  <div className="bg-green-50 border border-green-200 rounded p-2">
+                                    <div className="text-green-700 font-medium text-sm">
+                                      ✓ Mechanic arrival verified
+                                    </div>
+                                    <div className="text-green-600 text-xs">
+                                      You can now make payment once work is completed
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-3 justify-end">
+                                    <Button 
+                                      variant="outline"
+                                      onClick={() => navigate(`/messages?conversation=${bid.mechanicId}&jobId=${job.id}`)}
+                                    >
+                                      <MessageSquare className="mr-2 h-4 w-4" />
+                                      Message Mechanic
+                                    </Button>
+                                    <Button 
+                                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                                      onClick={() => setIsPaymentFormOpen(true)}
+                                    >
+                                      <DollarSign className="mr-2 h-4 w-4" />
+                                      Make Payment
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="space-y-3">
+                                  <div className="bg-amber-50 border border-amber-200 rounded p-2">
+                                    <div className="text-amber-700 font-medium text-sm">
+                                      ⏳ Waiting for mechanic arrival
+                                    </div>
+                                    <div className="text-amber-600 text-xs">
+                                      Payment will be available after verifying mechanic's arrival
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-3 justify-end">
+                                    <Button 
+                                      variant="outline"
+                                      onClick={() => navigate(`/messages?conversation=${bid.mechanicId}&jobId=${job.id}`)}
+                                    >
+                                      <MessageSquare className="mr-2 h-4 w-4" />
+                                      Message Mechanic
+                                    </Button>
+                                    <Button 
+                                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                                      onClick={() => navigate(`/verification`)}
+                                    >
+                                      <CheckCircle className="mr-2 h-4 w-4" />
+                                      Verify Arrival
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

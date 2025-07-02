@@ -147,6 +147,28 @@ export const useWebSocket = () => {
         }
         break;
 
+      case 'mechanic_arrival_verified':
+        // Invalidate job details for customer
+        if (user?.id === message.data.job.userId) {
+          queryClient.invalidateQueries({ queryKey: [`/api/jobs/${message.data.job.id}`] });
+          toast({
+            title: "Mechanic Arrival Verified ✓",
+            description: "Payment is now available for this job",
+          });
+        }
+        break;
+
+      case 'arrival_confirmed':
+        // Invalidate job details for mechanic
+        if (user?.id === message.data.job.assignedMechanicId) {
+          queryClient.invalidateQueries({ queryKey: [`/api/jobs/${message.data.job.id}`] });
+          toast({
+            title: "Arrival Confirmed ✓",
+            description: "Customer has verified your arrival",
+          });
+        }
+        break;
+
       default:
         console.log('Unhandled WebSocket message:', message);
     }
