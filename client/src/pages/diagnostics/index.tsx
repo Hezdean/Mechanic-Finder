@@ -77,6 +77,9 @@ export default function DiagnosticsPage() {
       return response;
     },
     onSuccess: (result) => {
+      console.log('Diagnostic API Response:', result);
+      console.log('Possible Causes:', result?.possibleCauses);
+      console.log('Estimated Cost:', result?.estimatedCost);
       setDiagnosticResult(result);
     },
     onError: (error: any) => {
@@ -106,7 +109,7 @@ export default function DiagnosticsPage() {
   };
 
   const handleFindMechanic = () => {
-    navigate("/mechanics");
+    window.location.href = "/mechanics";
   };
 
   const urgency = diagnosticResult ? urgencyConfig[diagnosticResult.urgencyLevel] : null;
