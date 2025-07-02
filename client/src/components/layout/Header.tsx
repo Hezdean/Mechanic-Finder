@@ -70,11 +70,9 @@ const Header = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Link href={user ? "/dashboard" : "/"}>
-                <a className="flex items-center">
-                  <Drill className="h-8 w-auto text-primary" />
-                  <span className="ml-2 text-xl font-bold text-foreground">MechConnect</span>
-                </a>
+              <Link href={user ? "/dashboard" : "/"} className="flex items-center">
+                <Drill className="h-8 w-auto text-primary" />
+                <span className="ml-2 text-xl font-bold text-foreground">MechConnect</span>
               </Link>
             </div>
 
@@ -101,11 +99,9 @@ const Header = () => {
             <ThemeToggle />
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <Link href="/messages">
-                  <a className="text-foreground hover:text-primary relative">
-                    <MessageSquare className="h-5 w-5" />
-                    <NotificationBadge />
-                  </a>
+                <Link href="/messages" className="text-foreground hover:text-primary relative">
+                  <MessageSquare className="h-5 w-5" />
+                  <NotificationBadge />
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

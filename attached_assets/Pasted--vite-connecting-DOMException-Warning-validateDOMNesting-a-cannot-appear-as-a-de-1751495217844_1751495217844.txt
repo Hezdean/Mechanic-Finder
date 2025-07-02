@@ -1,0 +1,43 @@
+[vite] connecting...
+DOMException {}
+
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of &lt;a&gt;.
+    at a
+    at a
+    at https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9dd68a10:158:18
+    at div
+    at div
+    at div
+    at div
+    at header
+    at Header (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/components/layout/Header.tsx:38:22)
+    at Router
+    at Provider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7IAXTU4.js?v=9dd68a10:38:15)
+    at TooltipProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9dd68a10:63:5)
+    at AuthProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-auth.tsx:24:32)
+    at QueryClientProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9dd68a10:2881:3)
+    at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-theme.tsx:25:3)
+    at App
+    at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/components/ui/theme-provider.tsx:25:3)
+at a
+at a
+at https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9dd68a10:158:18
+at div
+at div
+at div
+at div
+at header
+at Header (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/components/layout/Header.tsx:38:22)
+at Router
+at Provider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7IAXTU4.js?v=9dd68a10:38:15)
+at TooltipProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9dd68a10:63:5)
+at AuthProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-auth.tsx:24:32)
+at QueryClientProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9dd68a10:2881:3)
+at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/hooks/use-theme.tsx:25:3)
+at App
+at ThemeProvider (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/src/components/ui/theme-provider.tsx:25:3)
+at t.value (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://d1e0d66d-d0a6-44ac-83b6-54760dbfc543-00-1ogcmxa3cba7y.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
