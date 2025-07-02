@@ -76,7 +76,7 @@ const FeaturedMechanics = () => {
         
         <div className="mt-10 text-center">
           <Link href="/mechanics">
-            <Button className="bg-primary-500 hover:bg-primary-600 text-white">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
               View All Mechanics <span className="ml-2">→</span>
             </Button>
           </Link>
