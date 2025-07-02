@@ -49,8 +49,66 @@ export class DbStorage implements IStorage {
       }
       
       console.log('Data initialization complete');
+      
+      // Add some test messages for demonstration
+      await this.seedMessages();
     } catch (error) {
       console.error('Error initializing data:', error);
+    }
+  }
+
+  private async seedMessages() {
+    try {
+      // Check if messages already exist
+      const existingMessages = await db.select().from(messages).limit(1);
+      if (existingMessages.length > 0) {
+        console.log('Messages already exist, skipping seed');
+        return;
+      }
+
+      console.log('Seeding test messages...');
+
+      // Create test messages for different users (especially for mechanic user ID 2)
+      const testMessages = [
+        {
+          senderId: 5,
+          receiverId: 2,
+          content: 'Hi Michael! I need help with my car brake issue. Are you available this week?',
+          isRead: false,
+        },
+        {
+          senderId: 1,
+          receiverId: 2,
+          content: 'Welcome to MechConnect! Your profile has been approved.',
+          isRead: false,
+        },
+        {
+          senderId: 3,
+          receiverId: 2,
+          content: 'Thanks for the great service on my last repair!',
+          isRead: false,
+        },
+        {
+          senderId: 4,
+          receiverId: 2,
+          content: 'Can you help me with a battery replacement? Its urgent.',
+          isRead: false,
+        },
+        {
+          senderId: 2,
+          receiverId: 5,
+          content: 'Yes, I can help with your brakes. What time works for you?',
+          isRead: false,
+        },
+      ];
+
+      for (const message of testMessages) {
+        await db.insert(messages).values(message);
+      }
+
+      console.log('Test messages seeded successfully');
+    } catch (error) {
+      console.error('Error seeding messages:', error);
     }
   }
 

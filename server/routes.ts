@@ -1284,8 +1284,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/messages/unread', authenticateToken, async (req, res) => {
     try {
       const userId = req.user!.userId;
+      console.log(`Fetching unread messages for user ${userId}`);
+      
       const messages = await storage.listMessagesByUserId(userId);
+      console.log(`Found ${messages.length} total messages for user ${userId}`);
+      
       const unreadMessages = messages.filter(msg => !msg.isRead && msg.receiverId === userId);
+      console.log(`Found ${unreadMessages.length} unread messages for user ${userId}`);
       
       // Get sender data for each message
       const messagesWithSenderData = await Promise.all(
@@ -1298,6 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(messagesWithSenderData);
     } catch (error) {
+      console.error("Error retrieving unread messages:", error);
       res.status(500).json({ message: "Error retrieving unread messages", error });
     }
   });

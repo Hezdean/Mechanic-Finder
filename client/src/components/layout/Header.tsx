@@ -13,6 +13,8 @@ import {
 import MobileMenu from "./MobileMenu";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Menu, User, LogOut, Settings, Drill, Car, MessageSquare, Receipt, History } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 
 const Header = () => {
   const [location] = useLocation();
@@ -34,6 +36,28 @@ const Header = () => {
       default:
         return "/dashboard/user";
     }
+  };
+
+  // Notification badge component for unread messages
+  const NotificationBadge = () => {
+    const { data: unreadMessages = [] } = useQuery({
+      queryKey: ['/api/messages/unread'],
+      enabled: isAuthenticated,
+      refetchInterval: 30000, // Poll every 30 seconds
+    });
+
+    const unreadCount = Array.isArray(unreadMessages) ? unreadMessages.length : 0;
+
+    if (unreadCount === 0) return null;
+
+    return (
+      <Badge 
+        variant="destructive" 
+        className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+      >
+        {unreadCount > 99 ? '99+' : unreadCount}
+      </Badge>
+    );
   };
 
   return (
@@ -74,8 +98,9 @@ const Header = () => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link href="/messages">
-                  <a className="text-foreground hover:text-primary">
+                  <a className="text-foreground hover:text-primary relative">
                     <MessageSquare className="h-5 w-5" />
+                    <NotificationBadge />
                   </a>
                 </Link>
                 <DropdownMenu>
