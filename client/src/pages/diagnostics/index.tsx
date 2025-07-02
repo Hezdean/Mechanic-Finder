@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -62,9 +62,15 @@ export default function DiagnosticsPage() {
   const [context, setContext] = useState("");
   const [diagnosticResult, setDiagnosticResult] = useState<DiagnosticResponse | null>(null);
 
-  // Redirect if not authenticated
+  // Use useEffect for redirection to avoid hooks order issues
+  useEffect(() => {
+    if (!isAuthenticated) {
+      window.location.href = "/login";
+    }
+  }, [isAuthenticated]);
+
+  // Don't render if not authenticated
   if (!isAuthenticated) {
-    window.location.href = "/login";
     return null;
   }
 
@@ -77,9 +83,6 @@ export default function DiagnosticsPage() {
       return await response.json();
     },
     onSuccess: (result) => {
-      console.log('Diagnostic API Response:', result);
-      console.log('Possible Causes:', result?.possibleCauses);
-      console.log('Estimated Cost:', result?.estimatedCost);
       setDiagnosticResult(result);
     },
     onError: (error: any) => {
