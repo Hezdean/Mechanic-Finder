@@ -115,6 +115,7 @@ export const useWebSocket = () => {
         if (user?.id === message.data.bid.mechanicId) {
           queryClient.invalidateQueries({ queryKey: [`/api/jobs/${message.data.job.id}`] });
           queryClient.invalidateQueries({ queryKey: ['/api/mechanic/bids'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/messages/unread'] });
           toast({
             title: "Bid Accepted! 🎉",
             description: `Your bid for "${message.data.job.title}" was accepted!`,
@@ -127,6 +128,7 @@ export const useWebSocket = () => {
         if (user?.id === message.data.bid.mechanicId) {
           queryClient.invalidateQueries({ queryKey: [`/api/jobs/${message.data.job.id}`] });
           queryClient.invalidateQueries({ queryKey: ['/api/mechanic/bids'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/messages/unread'] });
           toast({
             title: "Bid Not Selected",
             description: `Another mechanic was selected for "${message.data.job.title}"`,

@@ -119,11 +119,11 @@ const MechanicDashboard = () => {
     select: (data) => Array.isArray(data) ? data.filter((job: any) => job.status === 'open') : []
   });
 
-  // Notifications query for bid acceptances
+  // Notifications query for unread messages (bid acceptances, job updates, etc.)
   const { data: notifications, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['/api/messages/unread'],
     refetchInterval: 30000, // Poll every 30 seconds for new notifications
-    select: (data) => Array.isArray(data) ? data.filter((msg: any) => msg.type === 'bid_accepted') : []
+    select: (data) => Array.isArray(data) ? data : []
   });
 
   // My bids query
@@ -604,54 +604,88 @@ const MechanicDashboard = () => {
           </Card>
         )}
 
-        {/* Notifications Section for Bid Acceptances */}
+        {/* Notifications Section for Unread Messages */}
         {profile && notifications && notifications.length > 0 && (
-          <Card className="mb-8 border-green-200 bg-green-50">
+          <Card className="mb-8 border-blue-200 bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center text-green-800">
-                <CheckCircle className="mr-2 h-5 w-5" />
-                Congratulations! You Have New Job Assignments
+              <CardTitle className="flex items-center text-blue-800">
+                <MessageSquare className="mr-2 h-5 w-5" />
+                New Messages ({notifications.length})
               </CardTitle>
-              <CardDescription className="text-green-700">
-                Your bids have been accepted. Contact your customers to coordinate the repair work.
+              <CardDescription className="text-blue-700">
+                You have unread messages about your jobs and bids.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {notifications.map((notification: any) => (
-                  <div key={notification.id} className="bg-white rounded-lg p-4 border border-green-200">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-semibold text-green-900">
-                          Job: {notification.job?.title}
-                        </h4>
-                        <p className="text-sm text-green-700">
-                          From: {notification.sender?.firstName} {notification.sender?.lastName}
-                        </p>
+                {notifications.map((notification: any) => {
+                  const isAcceptedMessage = notification.content.includes('accepted');
+                  const isRejectedMessage = notification.content.includes('selected another mechanic');
+                  
+                  return (
+                    <div key={notification.id} className="bg-white rounded-lg p-4 border border-blue-200">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold text-blue-900">
+                            {notification.jobId ? `Job Related Message` : 'System Message'}
+                          </h4>
+                          <p className="text-sm text-blue-700">
+                            {formatDate(notification.createdAt)}
+                          </p>
+                        </div>
+                        <Badge className={
+                          isAcceptedMessage ? "bg-green-600 text-white" :
+                          isRejectedMessage ? "bg-red-600 text-white" :
+                          "bg-blue-600 text-white"
+                        }>
+                          {isAcceptedMessage ? 'Bid Accepted' :
+                           isRejectedMessage ? 'Bid Not Selected' :
+                           'New Message'}
+                        </Badge>
                       </div>
-                      <Badge className="bg-green-600 text-white">
-                        Bid Accepted
-                      </Badge>
+                      <p className="text-blue-800 mb-3">{notification.content}</p>
+                      <div className="flex gap-2">
+                        {notification.jobId && (
+                          <Button 
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => navigate(`/jobs/${notification.jobId}`)}
+                          >
+                            View Job Details
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={async () => {
+                            // Mark message as read
+                            try {
+                              await fetch(`/api/messages/${notification.id}/read`, {
+                                method: 'POST',
+                                credentials: 'include'
+                              });
+                              // Refresh notifications
+                              queryClient.invalidateQueries({ queryKey: ['/api/messages/unread'] });
+                            } catch (error) {
+                              console.error('Error marking message as read:', error);
+                            }
+                          }}
+                        >
+                          Mark as Read
+                        </Button>
+                        {notification.senderId && (
+                          <Button 
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => navigate(`/messages?conversation=${notification.senderId}&jobId=${notification.jobId || ''}`)}
+                          >
+                            Reply
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-green-800 mb-3">{notification.content}</p>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700"
-                        onClick={() => navigate(`/jobs/${notification.job?.id}`)}
-                      >
-                        View Job Details
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        onClick={() => navigate(`/messages?conversation=${notification.senderId}&jobId=${notification.jobId}`)}
-                      >
-                        Contact Customer
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -680,7 +714,7 @@ const MechanicDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {isLoadingActiveJobs ? (
+                  {isLoadingMyBids ? (
                     <div className="text-center py-6">Loading active jobs...</div>
                   ) : activeJobs?.length ? (
                     <div className="rounded-md border">
