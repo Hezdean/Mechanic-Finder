@@ -136,7 +136,7 @@ const MechanicDashboard = () => {
   const { data: myBidsWithJobs, isLoading: isLoadingBidsWithJobs } = useQuery({
     queryKey: ['/api/mechanic/bids', 'with-jobs'],
     queryFn: async () => {
-      if (!myBids?.length) return [];
+      if (!myBids || !Array.isArray(myBids) || !myBids.length) return [];
       
       // Get job details for each bid
       const bidsWithJobs = await Promise.all(
@@ -158,7 +158,7 @@ const MechanicDashboard = () => {
       
       return bidsWithJobs.filter(bid => bid.job !== null);
     },
-    enabled: !!myBids?.length,
+    enabled: !!myBids && Array.isArray(myBids) && myBids.length > 0,
   });
 
   // Use enhanced bids with job details
@@ -690,9 +690,9 @@ const MechanicDashboard = () => {
         {profile && (
           <Tabs defaultValue="active-jobs" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">
-              <TabsTrigger value="active-jobs">Active Jobs ({activeJobs.length})</TabsTrigger>
-              <TabsTrigger value="my-bids">My Bids ({allMyBids.length})</TabsTrigger>
-              <TabsTrigger value="available-jobs">Available Jobs ({openJobs.length})</TabsTrigger>
+              <TabsTrigger value="active-jobs">Active Jobs ({Array.isArray(activeJobs) ? activeJobs.length : 0})</TabsTrigger>
+              <TabsTrigger value="my-bids">My Bids ({Array.isArray(allMyBids) ? allMyBids.length : 0})</TabsTrigger>
+              <TabsTrigger value="available-jobs">Available Jobs ({Array.isArray(openJobs) ? openJobs.length : 0})</TabsTrigger>
               <TabsTrigger value="mechanic-profile">Mechanic Profile</TabsTrigger>
             </TabsList>
             
@@ -798,7 +798,7 @@ const MechanicDashboard = () => {
                 <CardContent>
                   {isLoadingMyBids || isLoadingBidsWithJobs ? (
                     <div className="text-center py-6">Loading your bids...</div>
-                  ) : allMyBids?.length ? (
+                  ) : allMyBids && Array.isArray(allMyBids) && allMyBids.length > 0 ? (
                     <div className="rounded-md border">
                       <Table>
                         <TableHeader>
@@ -811,7 +811,7 @@ const MechanicDashboard = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {allMyBids.map((bid: any) => (
+                          {(allMyBids || []).map((bid: any) => (
                             <TableRow key={bid.id}>
                               <TableCell className="font-medium">{bid.job?.title || 'Job Details Unavailable'}</TableCell>
                               <TableCell>{formatCurrency(bid.amount)}</TableCell>
@@ -862,7 +862,7 @@ const MechanicDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {!profile.isVerified ? (
+                  {!profile || !profile.isVerified ? (
                     <div className="text-center py-8 bg-amber-50 rounded-md border border-amber-200">
                       <AlertCircle className="mx-auto h-12 w-12 text-amber-500" />
                       <h3 className="mt-4 text-lg font-medium">Profile Verification Required</h3>
@@ -873,7 +873,7 @@ const MechanicDashboard = () => {
                     </div>
                   ) : isLoadingOpenJobs ? (
                     <div className="text-center py-6">Loading available jobs...</div>
-                  ) : openJobs && openJobs.length > 0 ? (
+                  ) : openJobs && Array.isArray(openJobs) && openJobs.length > 0 ? (
                     <div className="rounded-md border">
                       <Table>
                         <TableHeader>
@@ -947,7 +947,7 @@ const MechanicDashboard = () => {
                     <CardTitle className="flex items-center">
                       <UserCheck className="mr-2 h-5 w-5 text-primary-500" />
                       Mechanic Profile
-                      {profile.isVerified ? (
+                      {profile && profile.isVerified ? (
                         <Badge className="ml-3 bg-green-100 text-green-800">Verified</Badge>
                       ) : (
                         <Badge className="ml-3 bg-amber-100 text-amber-800">Pending Verification</Badge>
