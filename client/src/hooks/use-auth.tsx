@@ -68,11 +68,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Get current user (only if we have a token)
-  const { isLoading } = useQuery({
+  const { isLoading, error: authError } = useQuery({
     queryKey: ['/api/auth/me'],
     enabled: !!token,
     staleTime: 300000, // 5 minutes
+    retry: false,
   });
+
+  // Handle authentication errors
+  useEffect(() => {
+    if (authError) {
+      console.error("Auth check failed:", authError);
+      // Clear invalid token on auth failure
+      if (authError?.message?.includes('401')) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        setToken(null);
+        setUser(null);
+      }
+    }
+  }, [authError]);
 
   // Login mutation
   const loginMutation = useMutation({

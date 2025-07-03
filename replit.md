@@ -140,6 +140,7 @@ Changelog:
 - July 2, 2025. Fixed critical AI diagnostics display issue by correcting JSON response parsing in frontend mutation, ensuring proper display of diagnostic results, causes, recommendations, and cost estimates
 - July 2, 2025. Enhanced registration form with optional phone number field for improved user contact information and verification capabilities
 - July 2, 2025. Fixed styling errors on home page: corrected Browse Mechanics button to use proper theme colors and resolved DOM nesting warnings in Header and Footer components
+- July 3, 2025. Fixed unhandled promise rejection errors by adding proper error handling for authentication queries and global error handlers to prevent console warnings
 ```
 
 ## User Preferences
