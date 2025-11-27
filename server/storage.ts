@@ -1128,4 +1128,7 @@ export class DatabaseStorage implements IStorage {
 
 import { DbStorage } from "./db-storage";
 
-export const storage = new DbStorage();
+// Using in-memory storage while database is unavailable
+// Switch back to DbStorage when database is restored:
+// export const storage = new DbStorage();
+export const storage = new MemStorage();
