@@ -15,6 +15,7 @@ import TestLogin from "@/pages/test-login";
 import Register from "@/pages/auth/register";
 import AdminDashboard from "@/pages/dashboard/admin";
 import MechanicDashboard from "@/pages/dashboard/mechanic";
+import MechanicHistory from "@/pages/dashboard/mechanic-history";
 import UserDashboard from "@/pages/dashboard/user";
 import UserManagement from "@/pages/admin/users";
 import SystemAnalytics from "@/pages/admin/analytics";
@@ -57,6 +58,7 @@ function Router() {
         <Route path="/register" component={Register} />
         <Route path="/dashboard/admin" component={AdminDashboard} />
         <Route path="/dashboard/mechanic" component={MechanicDashboard} />
+        <Route path="/dashboard/mechanic/history" component={MechanicHistory} />
         <Route path="/dashboard/user" component={UserDashboard} />
         <Route path="/admin/users" component={UserManagement} />
         <Route path="/admin/analytics" component={SystemAnalytics} />
