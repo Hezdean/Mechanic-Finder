@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { formatCurrency } from "@/lib/utils";
 import { 
   User, 
   Wrench, 
@@ -20,32 +21,56 @@ const DashboardPage = () => {
   const { user } = useAuth();
 
   // Fetch real-time data for admin dashboard
-  const { data: users } = useQuery({
+  const { data: users } = useQuery<any[]>({
     queryKey: ['/api/users'],
     enabled: user?.role === 'admin',
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
-  const { data: mechanics } = useQuery({
+  const { data: mechanics } = useQuery<any[]>({
     queryKey: ['/api/mechanic-profiles'],
     enabled: user?.role === 'admin',
     refetchInterval: 30000,
   });
 
-  const { data: jobs } = useQuery({
+  const { data: jobs } = useQuery<any[]>({
     queryKey: ['/api/jobs'],
     enabled: user?.role === 'admin',
     refetchInterval: 30000,
   });
 
   // Calculate real-time statistics
-  const totalUsers = users?.length || 0;
-  const activeMechanics = mechanics?.length || 0;
-  const openJobs = jobs?.filter((job: any) => job.status === 'open').length || 0;
-  const completedJobs = jobs?.filter((job: any) => job.status === 'completed').length || 0;
+  const totalUsers = Array.isArray(users) ? users.length : 0;
+  const activeMechanics = Array.isArray(mechanics) ? mechanics.length : 0;
+  const openJobs = Array.isArray(jobs) ? jobs.filter((job: any) => job.status === 'open').length : 0;
+  const completedJobs = Array.isArray(jobs) ? jobs.filter((job: any) => job.status === 'completed').length : 0;
   
-  // Calculate estimated revenue (assuming $50 average per completed job)
+  // Calculate estimated revenue (assuming 50 MK average per completed job)
   const estimatedRevenue = completedJobs * 50;
+
+  // Mechanic data queries
+  const { data: mechanicProfile } = useQuery<any>({
+    queryKey: [`/api/mechanic-profiles/user/${user?.id}`],
+    enabled: user?.role === 'mechanic',
+  });
+
+  const { data: mechanicBids } = useQuery<any[]>({
+    queryKey: ['/api/mechanic/bids'],
+    enabled: user?.role === 'mechanic',
+  });
+
+  // Calculate mechanic stats from real data
+  const mechanicStats = {
+    completedJobs: Array.isArray(mechanicBids) 
+      ? mechanicBids.filter((bid: any) => bid.status === 'accepted').length 
+      : 0,
+    rating: mechanicProfile?.rating || 0,
+    monthlyEarnings: Array.isArray(mechanicBids)
+      ? mechanicBids
+          .filter((bid: any) => bid.status === 'accepted')
+          .reduce((sum: number, bid: any) => sum + (bid.amount || 0), 0)
+      : 0,
+  };
 
   if (!user) {
     return (
@@ -226,7 +251,7 @@ const DashboardPage = () => {
               </Card>
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">${estimatedRevenue.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-primary mb-2">{formatCurrency(estimatedRevenue)}</div>
                   <div className="text-muted-foreground">Est. Revenue</div>
                   <div className="text-xs text-muted-foreground mt-1">{completedJobs} completed jobs</div>
                 </CardContent>
@@ -245,7 +270,7 @@ const DashboardPage = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>In Progress:</span>
-                      <span className="font-semibold text-blue-600">{jobs?.filter((job: any) => job.status === 'in_progress').length || 0}</span>
+                      <span className="font-semibold text-blue-600">{Array.isArray(jobs) ? jobs.filter((job: any) => job.status === 'in_progress').length : 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Completed:</span>
@@ -265,7 +290,7 @@ const DashboardPage = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Job Completion Rate:</span>
-                      <span className="font-semibold text-blue-600">{jobs?.length ? Math.round((completedJobs / jobs.length) * 100) : 0}%</span>
+                      <span className="font-semibold text-blue-600">{Array.isArray(jobs) && jobs.length > 0 ? Math.round((completedJobs / jobs.length) * 100) : 0}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Last Updated:</span>
@@ -282,21 +307,27 @@ const DashboardPage = () => {
         {user.role === "mechanic" && (
           <div className="mt-12 max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
+              <Card data-testid="card-mechanic-jobs">
                 <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-foreground mb-2">12</div>
+                  <div className="text-3xl font-bold text-foreground mb-2" data-testid="text-mechanic-jobs-completed">
+                    {mechanicStats.completedJobs}
+                  </div>
                   <div className="text-muted-foreground">Jobs Completed</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card data-testid="card-mechanic-rating">
                 <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-foreground mb-2">4.8</div>
+                  <div className="text-3xl font-bold text-foreground mb-2" data-testid="text-mechanic-rating">
+                    {mechanicStats.rating > 0 ? mechanicStats.rating.toFixed(1) : "N/A"}
+                  </div>
                   <div className="text-muted-foreground">Average Rating</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card data-testid="card-mechanic-earnings">
                 <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-foreground mb-2">$2,450</div>
+                  <div className="text-3xl font-bold text-foreground mb-2" data-testid="text-mechanic-earnings">
+                    {formatCurrency(mechanicStats.monthlyEarnings)}
+                  </div>
                   <div className="text-muted-foreground">This Month</div>
                 </CardContent>
               </Card>

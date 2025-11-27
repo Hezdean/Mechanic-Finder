@@ -47,7 +47,7 @@ export default function ServiceHistoryCard({ record }: ServiceHistoryCardProps) 
           
           <div className="text-right">
             <div className="text-lg font-semibold text-green-600">
-              ${record.totalCost.toFixed(2)}
+              MK {record.totalCost.toFixed(2)}
             </div>
             {hasActiveWarranty && (
               <Badge variant="secondary" className="bg-green-100 text-green-800 mt-1">
@@ -89,11 +89,11 @@ export default function ServiceHistoryCard({ record }: ServiceHistoryCardProps) 
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-200">
           <div className="text-sm">
             <span className="text-neutral-500">Labor:</span>
-            <span className="ml-2 font-medium">${record.laborCost.toFixed(2)}</span>
+            <span className="ml-2 font-medium">MK {record.laborCost.toFixed(2)}</span>
           </div>
           <div className="text-sm">
             <span className="text-neutral-500">Parts:</span>
-            <span className="ml-2 font-medium">${record.partsCost.toFixed(2)}</span>
+            <span className="ml-2 font-medium">MK {record.partsCost.toFixed(2)}</span>
           </div>
         </div>
 

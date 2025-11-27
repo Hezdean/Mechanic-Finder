@@ -197,7 +197,7 @@ const PartDetail = () => {
                 <div className="mt-4 space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Truck className="h-4 w-4" />
-                    <span>Free shipping on orders over $50</span>
+                    <span>Free shipping on orders over MK 50</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />

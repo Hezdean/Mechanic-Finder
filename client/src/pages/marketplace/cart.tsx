@@ -129,7 +129,7 @@ const Cart = () => {
                         
                         <div className="flex items-center gap-4">
                           <span className="font-semibold">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            MK {(item.price * item.quantity).toFixed(2)}
                           </span>
                           <Button
                             variant="ghost"
@@ -157,29 +157,29 @@ const Cart = () => {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>MK {subtotal.toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>{shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? "FREE" : `MK ${shipping.toFixed(2)}`}</span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>MK {tax.toFixed(2)}</span>
                 </div>
                 
                 <Separator />
                 
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>MK {total.toFixed(2)}</span>
                 </div>
 
                 {shipping > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    Add ${(50 - subtotal).toFixed(2)} more for free shipping
+                    Add MK {(50 - subtotal).toFixed(2)} more for free shipping
                   </p>
                 )}
 

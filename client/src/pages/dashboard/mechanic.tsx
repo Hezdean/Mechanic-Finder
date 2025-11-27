@@ -439,7 +439,7 @@ const MechanicDashboard = () => {
                   name="hourlyRate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hourly Rate ($)</FormLabel>
+                      <FormLabel>Hourly Rate (MK)</FormLabel>
                       <FormControl>
                         <Input type="number" min={0} placeholder="75" {...field} />
                       </FormControl>
@@ -1121,7 +1121,7 @@ const MechanicDashboard = () => {
                 name="hourlyRate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hourly Rate ($)</FormLabel>
+                    <FormLabel>Hourly Rate (MK)</FormLabel>
                     <FormControl>
                       <Input type="number" min={0} placeholder="75" {...field} />
                     </FormControl>

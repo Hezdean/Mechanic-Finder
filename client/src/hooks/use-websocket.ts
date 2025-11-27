@@ -105,7 +105,7 @@ export const useWebSocket = () => {
           queryClient.invalidateQueries({ queryKey: [`/api/jobs?userId=${user.id}`] });
           toast({
             title: "New Bid Received",
-            description: `${message.data.mechanic.firstName} ${message.data.mechanic.lastName} bid $${message.data.bid.amount}`,
+            description: `${message.data.mechanic.firstName} ${message.data.mechanic.lastName} bid MK ${message.data.bid.amount}`,
           });
         }
         break;

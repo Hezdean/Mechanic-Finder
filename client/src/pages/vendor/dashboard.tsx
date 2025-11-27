@@ -87,7 +87,7 @@ const VendorDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="text-2xl font-bold">${stats?.totalRevenue || 0}</p>
+                  <p className="text-2xl font-bold">MK {stats?.totalRevenue || 0}</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600" />
               </div>
@@ -146,7 +146,7 @@ const VendorDashboard = () => {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">${order.total}</p>
+                          <p className="font-semibold">MK {order.total}</p>
                           <Badge variant="secondary" className="text-xs">
                             {order.status}
                           </Badge>
@@ -222,7 +222,7 @@ const VendorDashboard = () => {
                           </div>
                         </TableCell>
                         <TableCell>{part.brand}</TableCell>
-                        <TableCell>${part.price}</TableCell>
+                        <TableCell>MK {part.price}</TableCell>
                         <TableCell>
                           <Badge variant={part.stockQuantity > 0 ? "secondary" : "destructive"}>
                             {part.stockQuantity}
@@ -320,7 +320,7 @@ const VendorDashboard = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Average Order Value</span>
-                      <span className="font-semibold">$85.40</span>
+                      <span className="font-semibold">MK 85.40</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Customer Satisfaction</span>
