@@ -141,6 +141,10 @@ Changelog:
 - July 2, 2025. Enhanced registration form with optional phone number field for improved user contact information and verification capabilities
 - July 2, 2025. Fixed styling errors on home page: corrected Browse Mechanics button to use proper theme colors and resolved DOM nesting warnings in Header and Footer components
 - July 3, 2025. Fixed unhandled promise rejection errors by adding proper error handling for authentication queries and global error handlers to prevent console warnings
+- November 27, 2025. Fixed mechanic dashboard data inconsistency: stats now only count truly completed jobs by cross-referencing bids with actual job status
+- November 27, 2025. Replaced all '$' currency symbols with 'MK' throughout the application (dashboard, marketplace, cart, notifications)
+- November 27, 2025. Fixed rating display to show "N/A" when rating is 0 or unavailable
+- November 27, 2025. Created mechanic job history page at /dashboard/mechanic/history with comprehensive tracking
 ```
 
 ## User Preferences
