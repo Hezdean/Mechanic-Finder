@@ -59,15 +59,40 @@ const DashboardPage = () => {
     enabled: user?.role === 'mechanic',
   });
 
-  // Calculate mechanic stats from real data
+  // Fetch bids with job details for accurate stats
+  const { data: bidsWithJobs } = useQuery<any[]>({
+    queryKey: ['/api/mechanic/bids', 'with-jobs-dashboard'],
+    queryFn: async () => {
+      if (!mechanicBids || !Array.isArray(mechanicBids) || !mechanicBids.length) return [];
+      
+      const enrichedBids = await Promise.all(
+        mechanicBids.map(async (bid: any) => {
+          try {
+            const jobResponse = await fetch(`/api/jobs/${bid.jobId}`, {
+              credentials: 'include'
+            });
+            if (!jobResponse.ok) return { ...bid, job: null };
+            const job = await jobResponse.json();
+            return { ...bid, job };
+          } catch {
+            return { ...bid, job: null };
+          }
+        })
+      );
+      return enrichedBids.filter(bid => bid.job !== null);
+    },
+    enabled: !!mechanicBids && Array.isArray(mechanicBids) && mechanicBids.length > 0,
+  });
+
+  // Calculate mechanic stats from real data - only count TRULY completed jobs
   const mechanicStats = {
-    completedJobs: Array.isArray(mechanicBids) 
-      ? mechanicBids.filter((bid: any) => bid.status === 'accepted').length 
+    completedJobs: Array.isArray(bidsWithJobs) 
+      ? bidsWithJobs.filter((bid: any) => bid.status === 'accepted' && bid.job?.status === 'completed').length 
       : 0,
     rating: mechanicProfile?.rating || 0,
-    monthlyEarnings: Array.isArray(mechanicBids)
-      ? mechanicBids
-          .filter((bid: any) => bid.status === 'accepted')
+    monthlyEarnings: Array.isArray(bidsWithJobs)
+      ? bidsWithJobs
+          .filter((bid: any) => bid.status === 'accepted' && bid.job?.status === 'completed')
           .reduce((sum: number, bid: any) => sum + (bid.amount || 0), 0)
       : 0,
   };
