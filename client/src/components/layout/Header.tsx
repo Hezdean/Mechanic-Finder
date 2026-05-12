@@ -42,12 +42,11 @@ const Header = () => {
     }
   };
 
-  // Notification badge component for unread messages
   const NotificationBadge = () => {
     const { data: unreadMessages = [] } = useQuery({
       queryKey: ['/api/messages/unread'],
       enabled: isAuthenticated,
-      refetchInterval: 30000, // Poll every 30 seconds
+      refetchInterval: 30000,
     });
 
     const unreadCount = Array.isArray(unreadMessages) ? unreadMessages.length : 0;
@@ -72,13 +71,12 @@ const Header = () => {
             <div className="flex-shrink-0 flex items-center">
               <Link href={user ? "/dashboard" : "/"} className="flex items-center">
                 <Drill className="h-8 w-auto text-primary" />
-                <span className="ml-2 text-xl font-bold text-foreground">MechConnect</span>
+                <span className="ml-2 text-xl font-bold text-foreground">GaMoto</span>
               </Link>
             </div>
 
           </div>
           <div className="flex items-center space-x-4">
-            {/* Navigation Links */}
             {isAuthenticated && (
               <nav className="hidden md:flex items-center space-x-6 mr-4">
                 <Link href="/jobs" className="text-foreground hover:text-primary font-medium">
@@ -194,7 +192,6 @@ const Header = () => {
         </div>
       </div>
       
-      {/* Mobile menu */}
       <MobileMenu 
         isOpen={mobileMenuOpen} 
         onClose={() => setMobileMenuOpen(false)} 
